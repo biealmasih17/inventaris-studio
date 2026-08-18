@@ -6,757 +6,634 @@
     <title>Inventaris Studio & Lab</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- FontAwesome Icons -->
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
-    <!-- Google Fonts -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-    <!-- Supabase JS Client -->
+    <!-- Lucide Icons -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <!-- Supabase JS SDK v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script>
-        tailwind.config = {
-            theme: {
-                extend: {
-                    fontFamily: {
-                        sans: ['Plus Jakarta Sans', 'sans-serif'],
-                    },
-                    colors: {
-                        brand: {
-                            50: '#eef2ff',
-                            100: '#e0e7ff',
-                            500: '#6366f1',
-                            600: '#4f46e5',
-                            700: '#4338ca',
-                            900: '#312e81',
-                        }
-                    }
-                }
-            }
-        }
-    </script>
     <style>
-        .custom-scrollbar::-webkit-scrollbar {
-            width: 6px;
-            height: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 4px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-            background: #94a3b8;
+        .glass-header {
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
         }
     </style>
 </head>
-<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
 
-    <!-- Top Navigation Header -->
-    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+    <!-- NAVBAR / HEADER -->
+    <header class="glass-header border-b border-slate-800 sticky top-0 z-40">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
-                <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-lg flex items-center justify-center">
-                    <i class="fa-solid fa-boxes-stacked text-xl"></i>
+                <div class="bg-indigo-600 p-2 rounded-lg">
+                    <i data-lucide="box" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg tracking-tight leading-none text-white">Inventaris Studio & Lab</h1>
-                    <p class="text-xs text-slate-400 mt-1">Sistem Manajemen Aset Real-Time</p>
+                    <h1 class="font-bold text-lg text-white leading-tight">Inventaris Studio & Lab</h1>
+                    <p class="text-xs text-slate-400">Sistem Manajemen Aset Real-Time</p>
                 </div>
             </div>
 
+            <!-- Profile / Auth State Area -->
             <div class="flex items-center space-x-3">
-                <!-- Supabase Connection Indicator -->
-                <button onclick="openConfigModal()" id="connectionBadge" class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition">
-                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
-                    <span id="connectionText">Konfigurasi Supabase</span>
-                    <i class="fa-solid fa-gear ml-1"></i>
+                <!-- Status Badge Connection -->
+                <div id="connectionBadge" class="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Terhubung</span>
+                </div>
+
+                <!-- User Profile & Logout -->
+                <div id="userProfileArea" class="hidden flex items-center space-x-3 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5">
+                    <div class="text-right">
+                        <div id="userEmailTxt" class="text-xs font-semibold text-slate-200">user@example.com</div>
+                        <div id="userRoleBadge" class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">STAFF</div>
+                    </div>
+                    <button onclick="handleLogout()" title="Keluar" class="text-slate-400 hover:text-rose-400 transition">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                    </button>
+                </div>
+
+                <!-- Login Button (If Logged Out) -->
+                <button id="btnLoginModal" onclick="toggleModal('modalLogin', true)" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2 shadow-lg shadow-indigo-600/30">
+                    <i data-lucide="log-in" class="w-4 h-4"></i>
+                    <span>Masuk</span>
                 </button>
 
-                <button onclick="openFormModal()" class="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md shadow-brand-600/30 flex items-center space-x-2 transition active:scale-95">
-                    <i class="fa-solid fa-plus"></i>
-                    <span class="hidden sm:inline">Tambah Alat</span>
+                <!-- Config Button -->
+                <button onclick="toggleModal('modalConfig', true)" title="Pengaturan Supabase" class="p-2 text-slate-400 hover:text-slate-200 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg transition">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
                 </button>
             </div>
         </div>
     </header>
 
-    <!-- Main Container -->
-    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+    <!-- MAIN CONTENT -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
 
-        <!-- Notification Toast Container -->
-        <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
-
-        <!-- Dashboard Statistics Cards -->
-        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-            <!-- Stat 1: Jenis Perangkat -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
-                    <i class="fa-solid fa-layer-group"></i>
-                </div>
+        <!-- DASHBOARD STATISTIK -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jenis Perangkat</p>
-                    <h3 id="statJenis" class="text-2xl font-extrabold text-slate-900 mt-0.5">0</h3>
-                    <p class="text-xs text-slate-400 mt-1">Item dalam inventaris</p>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Jenis Perangkat</p>
+                    <h3 id="statTotalJenis" class="text-2xl font-bold text-white mt-1">0</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Item dalam inventaris</p>
+                </div>
+                <div class="bg-indigo-500/10 p-3 rounded-lg border border-indigo-500/20 text-indigo-400">
+                    <i data-lucide="layers" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <!-- Stat 2: Total Unit Fisik -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
-                    <i class="fa-solid fa-cubes"></i>
-                </div>
+            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Unit Fisik</p>
-                    <h3 id="statTotalUnit" class="text-2xl font-extrabold text-slate-900 mt-0.5">0</h3>
-                    <p class="text-xs text-slate-400 mt-1">Akumulasi seluruh unit</p>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Unit Fisik</p>
+                    <h3 id="statTotalUnit" class="text-2xl font-bold text-white mt-1">0</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">Akumulasi seluruh unit</p>
+                </div>
+                <div class="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20 text-blue-400">
+                    <i data-lucide="package" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <!-- Stat 3: Unit Kondisi Baik -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
-                    <i class="fa-solid fa-circle-check"></i>
-                </div>
+            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kondisi Baik</p>
-                    <h3 id="statBaik" class="text-2xl font-extrabold text-slate-900 mt-0.5">0</h3>
-                    <p class="text-xs text-blue-600 font-medium mt-1" id="statBaikPercent">0% Siap Dipakai</p>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Kondisi Baik</p>
+                    <h3 id="statKondisiBaik" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
+                    <p id="statPersenBaik" class="text-xs text-emerald-500 mt-0.5">0% Siap Dipakai</p>
+                </div>
+                <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-emerald-400">
+                    <i data-lucide="check-circle" class="w-6 h-6"></i>
                 </div>
             </div>
 
-            <!-- Stat 4: Unit Perlu Perbaikan -->
-            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
-                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
-                    <i class="fa-solid fa-triangle-exclamation"></i>
-                </div>
+            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
                 <div>
-                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Perlu Perbaikan</p>
-                    <h3 id="statRusak" class="text-2xl font-extrabold text-slate-900 mt-0.5">0</h3>
-                    <p class="text-xs text-rose-600 font-medium mt-1">Rusak Ringan & Parah</p>
+                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Perlu Perbaikan</p>
+                    <h3 id="statPerluPerbaikan" class="text-2xl font-bold text-rose-400 mt-1">0</h3>
+                    <p class="text-xs text-rose-500 mt-0.5">Rusak Ringan & Parah</p>
+                </div>
+                <div class="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 text-rose-400">
+                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
                 </div>
             </div>
-        </section>
+        </div>
 
-        <!-- Search, Filter & Action Bar -->
-        <section class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
-            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <!-- Quick Search Bar -->
-                <div class="relative flex-1">
-                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
-                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari berdasarkan Nama Alat, Merek, ID Aset, atau Spesifikasi..." 
-                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
-                </div>
-
-                <!-- Filter Controls -->
-                <div class="flex flex-wrap items-center gap-3">
-                    <!-- Filter Kategori -->
-                    <select id="filterKategori" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
-                        <option value="">Semua Kategori</option>
-                    </select>
-
-                    <!-- Filter Kondisi -->
-                    <select id="filterKondisi" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
-                        <option value="">Semua Kondisi</option>
-                        <option value="Baik">Baik</option>
-                        <option value="Rusak Ringan">Rusak Ringan</option>
-                        <option value="Rusak Parah">Rusak Parah</option>
-                    </select>
-
-                    <!-- Refresh Button -->
-                    <button onclick="fetchData()" class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition text-sm flex items-center justify-center" title="Refresh Data">
-                        <i class="fa-solid fa-rotate-right" id="refreshIcon"></i>
-                    </button>
-                </div>
+        <!-- TOOLBAR & FILTER -->
+        <div class="bg-slate-800/40 border border-slate-700/60 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+            <!-- Search input -->
+            <div class="relative w-full md:w-96">
+                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari Nama Alat, Merek, ID Aset..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
             </div>
-        </section>
 
-        <!-- Interactive Inventory Table -->
-        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
-            <div class="overflow-x-auto custom-scrollbar">
-                <table class="w-full text-left border-collapse">
-                    <thead>
-                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
-                            <th class="py-3.5 px-4 sm:px-6">ID Aset</th>
-                            <th class="py-3.5 px-4 sm:px-6">Nama Alat & Merek</th>
-                            <th class="py-3.5 px-4 sm:px-6">Kategori</th>
-                            <th class="py-3.5 px-4 sm:px-6 text-center">Jumlah</th>
-                            <th class="py-3.5 px-4 sm:px-6">Spesifikasi</th>
-                            <th class="py-3.5 px-4 sm:px-6">Checklist Kondisi</th>
-                            <th class="py-3.5 px-4 sm:px-6 text-right">Aksi</th>
+            <!-- Controls (Filter & Action Button) -->
+            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+                <select id="filterKategori" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    <option value="">Semua Kategori</option>
+                </select>
+
+                <select id="filterKondisi" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    <option value="">Semua Kondisi</option>
+                    <option value="Baik">Baik</option>
+                    <option value="Rusak Ringan">Rusak Ringan</option>
+                    <option value="Rusak Parah">Rusak Parah</option>
+                </select>
+
+                <!-- Tombol Tambah Alat (Khusus Admin) -->
+                <button id="btnTambahAlat" onclick="toggleModal('modalTambah', true)" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2 shadow-lg shadow-indigo-600/20">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    <span>Tambah Alat</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- TABEL DATA ALAT -->
+        <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm text-slate-300">
+                    <thead class="bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700/60">
+                        <tr>
+                            <th class="py-3.5 px-4">ID Aset</th>
+                            <th class="py-3.5 px-4">Nama Alat & Merek</th>
+                            <th class="py-3.5 px-4">Kategori</th>
+                            <th class="py-3.5 px-4 text-center">Jumlah</th>
+                            <th class="py-3.5 px-4">Spesifikasi</th>
+                            <th class="py-3.5 px-4 min-w-[160px]">Checklist Kondisi</th>
+                            <th class="py-3.5 px-4 text-right col-aksi">Aksi</th>
                         </tr>
                     </thead>
-                    <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-sm text-slate-700">
-                        <!-- Table Rows Rendered via JS -->
-                        <tr>
-                            <td colspan="7" class="py-12 text-center text-slate-400">
-                                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-brand-500 mb-2"></i>
-                                <p>Memuat data inventaris...</p>
-                            </td>
-                        </tr>
+                    <tbody id="inventoryTableBody" class="divide-y divide-slate-700/40">
+                        <!-- Data dimasukkan via JS -->
                     </tbody>
                 </table>
             </div>
-
-            <!-- Table Footer / Count -->
-            <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-                <span id="filteredCountText">Menampilkan 0 data</span>
-                <span class="text-slate-400">Status update otomatis tersinkronisasi ke Supabase</span>
+            
+            <!-- Empty / Loading State -->
+            <div id="tableEmptyState" class="p-12 text-center text-slate-400">
+                <i data-lucide="loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-indigo-500"></i>
+                <p>Memuat data inventaris...</p>
             </div>
-        </section>
+        </div>
+
     </main>
 
-    <!-- Modal Form Tambah / Edit Alat -->
-    <div id="formModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all">
-            <div class="bg-slate-900 px-6 py-4 flex items-center justify-between">
-                <h3 id="modalTitle" class="text-white font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-plus-circle text-brand-500"></i> Tambah Peralatan Baru
+    <!-- MODAL CONFIG SUPABASE -->
+    <div id="modalConfig" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-md w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-indigo-400"></i>
+                    <span>Pengaturan Supabase</span>
                 </h3>
-                <button onclick="closeFormModal()" class="text-slate-400 hover:text-white transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <button onclick="toggleModal('modalConfig', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-
-            <form id="itemForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
-                <input type="hidden" id="formId">
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">ID Aset</label>
-                        <input type="text" id="formIdAset" placeholder="Misal: AUD-010" required
-                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah Unit</label>
-                        <input type="number" id="formJumlah" min="1" value="1" required
-                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    </div>
-                </div>
-
+            <div class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Alat</label>
-                    <input type="text" id="formNamaAlat" placeholder="Nama peralatan studio/lab" required
-                        class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    <label class="text-xs font-medium text-slate-300">Supabase Project URL</label>
+                    <input type="text" id="cfgUrl" placeholder="https://xyz.supabase.co" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
                 </div>
-
-                <div class="grid grid-cols-2 gap-4">
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Merek</label>
-                        <input type="text" id="formMerek" placeholder="Merek / Tipe"
-                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
-                        <input type="text" id="formKategori" list="kategoriOptions" placeholder="Audio, Kamera, dll" required
-                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
-                        <datalist id="kategoriOptions">
-                            <option value="Audio">
-                            <option value="Aksesori Audio">
-                            <option value="Aksesori Kamera">
-                            <option value="Daya & Baterai">
-                            <option value="Daya & Kelistrikan">
-                            <option value="Display / Monitor">
-                            <option value="Display / Studio">
-                            <option value="Fasilitas Studio">
-                            <option value="Input Device">
-                            <option value="IT / Server">
-                            <option value="Jaringan & IT">
-                            <option value="Kabel & Adapter">
-                            <option value="Visual / Kamera">
-                            <option value="Video Production">
-                        </datalist>
-                    </div>
-                </div>
-
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kondisi Awal</label>
-                    <select id="formKondisi" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
-                        <option value="Baik">Baik</option>
-                        <option value="Rusak Ringan">Rusak Ringan</option>
-                        <option value="Rusak Parah">Rusak Parah</option>
-                    </select>
+                    <label class="text-xs font-medium text-slate-300">Supabase Anon Key</label>
+                    <input type="password" id="cfgKey" placeholder="eyJh..." class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
                 </div>
+            </div>
+            <div class="flex justify-end space-x-2 pt-2 border-t border-slate-700">
+                <button onclick="toggleModal('modalConfig', false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white">Batal</button>
+                <button onclick="saveConfig()" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Simpan</button>
+            </div>
+        </div>
+    </div>
 
+    <!-- MODAL LOGIN / MASUK -->
+    <div id="modalLogin" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="log-in" class="w-5 h-5 text-indigo-400"></i>
+                    <span>Masuk ke Sistem</span>
+                </h3>
+                <button onclick="toggleModal('modalLogin', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleLogin(event)" class="space-y-3">
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Spesifikasi / Detail</label>
-                    <textarea id="formSpesifikasi" rows="3" placeholder="Deskripsi spesifikasi teknis peralatan..."
-                        class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                    <label class="text-xs font-medium text-slate-300">Email Akun</label>
+                    <input type="email" id="loginEmail" required placeholder="admin@studio.com" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
                 </div>
-
-                <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
-                    <button type="button" onclick="closeFormModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">Batal</button>
-                    <button type="submit" id="btnSubmitForm" class="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-500 rounded-xl shadow-md transition">Simpan Data</button>
+                <div>
+                    <label class="text-xs font-medium text-slate-300">Password</label>
+                    <input type="password" id="loginPassword" required placeholder="••••••••" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                </div>
+                <div class="pt-2">
+                    <button type="submit" id="btnLoginSubmit" class="w-full py-2.5 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium shadow-lg shadow-indigo-600/30">
+                        Masuk Sekarang
+                    </button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Modal Config Kredensial Supabase -->
-    <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
-        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
-            <div class="bg-slate-900 px-6 py-4 flex items-center justify-between">
-                <h3 class="text-white font-bold text-lg flex items-center gap-2">
-                    <i class="fa-solid fa-plug text-amber-400"></i> Pengaturan Supabase
+    <!-- MODAL TAMBAH ALAT (KHUSUS ADMIN) -->
+    <div id="modalTambah" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-400"></i>
+                    <span>Tambah Peralatan Baru</span>
                 </h3>
-                <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white transition">
-                    <i class="fa-solid fa-xmark text-lg"></i>
-                </button>
+                <button onclick="toggleModal('modalTambah', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
-
-            <form onsubmit="saveConfig(event)" class="p-6 space-y-4">
-                <p class="text-xs text-slate-500 leading-relaxed">Masukkan **Supabase Project URL** dan **Anon Key** Anda dari Dashboard Supabase (Settings > API).</p>
-                
+            <form onsubmit="handleInsertItem(event)" class="space-y-3">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">ID Aset</label>
+                        <input type="text" id="addIdAset" required placeholder="AUD-010" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Jumlah Unit</label>
+                        <input type="number" id="addJumlah" required min="1" value="1" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                </div>
                 <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase URL</label>
-                    <input type="url" id="configUrl" placeholder="https://xyzxyz.supabase.co" required
-                        class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                    <label class="text-xs font-medium text-slate-300">Nama Alat</label>
+                    <input type="text" id="addNamaAlat" required placeholder="Mikrofon Wireless" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
                 </div>
-
-                <div>
-                    <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Anon Key</label>
-                    <input type="text" id="configKey" placeholder="eyJhbGciOiJIUzI1NiIsIn..." required
-                        class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Merek / Tipe</label>
+                        <input type="text" id="addMerek" placeholder="Saramonic Blink 500" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Kategori</label>
+                        <input type="text" id="addKategori" required placeholder="Audio" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
                 </div>
-
-                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
-                    <i class="fa-solid fa-circle-info text-brand-600 mt-0.5"></i>
-                    <span>Kredensial disimpan secara lokal di peramban Anda (localStorage).</span>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Kondisi Awal</label>
+                        <select id="addKondisi" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                            <option value="Baik">Baik</option>
+                            <option value="Rusak Ringan">Rusak Ringan</option>
+                            <option value="Rusak Parah">Rusak Parah</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Spesifikasi (Opsional)</label>
+                        <input type="text" id="addSpesifikasi" placeholder="Dual Channel, Type-C" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
                 </div>
-
-                <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
-                    <button type="button" onclick="closeConfigModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">Batal</button>
-                    <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-500 rounded-xl shadow-md transition">Hubungkan</button>
+                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-700">
+                    <button type="button" onclick="toggleModal('modalTambah', false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Simpan Alat</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- Application Script Logic -->
+    <!-- JAVASCRIPT LOGIC -->
     <script>
-        // App State
         let supabaseClient = null;
         let inventoryData = [];
-        let isConnected = false;
-        const TABLE_NAME = 'inventaris';
+        let currentUserRole = 'guest'; // 'guest', 'staff', 'admin'
 
-        // Initialize App on DOM Load
-        document.addEventListener('DOMContentLoaded', () => {
+        // Initialize icons & app on load
+        window.addEventListener('DOMContentLoaded', () => {
+            lucide.createIcons();
             initSupabase();
         });
 
-        // Initialize Supabase SDK
+        // Initialize Supabase Client
         function initSupabase() {
-            const savedUrl = localStorage.getItem('SUPABASE_URL');
-            const savedKey = localStorage.getItem('SUPABASE_KEY');
+            const url = localStorage.getItem('supa_url');
+            const key = localStorage.getItem('supa_key');
 
-            if (savedUrl && savedKey) {
+            if (url) document.getElementById('cfgUrl').value = url;
+            if (key) document.getElementById('cfgKey').value = key;
+
+            if (url && key) {
                 try {
-                    supabaseClient = supabase.createClient(savedUrl, savedKey);
-                    updateConnectionStatus(true, "Terhubung ke Supabase");
-                    setupRealtimeSubscription();
-                    fetchData();
-                    return;
+                    supabaseClient = supabase.createClient(url, key);
+                    checkAuthState();
+                    fetchInventory();
+                    subscribeRealtime();
                 } catch (e) {
-                    console.error("Gagal inisialisasi Supabase:", e);
+                    console.error(e);
+                    showToast('Konfigurasi Supabase tidak valid!', 'error');
                 }
+            } else {
+                document.getElementById('tableEmptyState').innerHTML = `
+                    <i data-lucide="settings" class="w-10 h-10 mx-auto mb-2 text-slate-500"></i>
+                    <p class="font-medium text-slate-300">Kredensial Supabase Belum Diatur</p>
+                    <p class="text-xs text-slate-500 mt-1">Klik tombol gerigi di pojok kanan atas untuk memasukkan URL & Anon Key Anda.</p>
+                `;
+                lucide.createIcons();
             }
-            
-            // Fallback status if credentials missing
-            updateConnectionStatus(false, "Belum Terhubung");
-            renderEmptyState("Kredensial Supabase belum diatur. Klik tombol 'Konfigurasi Supabase' di pojok kanan atas untuk memasukkan URL & Anon Key Anda.");
         }
 
-        // Setup Real-time Listener for Instant Checklist Updates
-        function setupRealtimeSubscription() {
+        // Save Config
+        function saveConfig() {
+            const url = document.getElementById('cfgUrl').value.trim();
+            const key = document.getElementById('cfgKey').value.trim();
+            localStorage.setItem('supa_url', url);
+            localStorage.setItem('supa_key', key);
+            toggleModal('modalConfig', false);
+            location.reload();
+        }
+
+        // Auth State Handler
+        async function checkAuthState() {
+            if (!supabaseClient) return;
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            
+            if (session?.user) {
+                // Fetch profile role
+                const { data: profile } = await supabaseClient
+                    .from('profiles')
+                    .select('role')
+                    .eq('id', session.user.id)
+                    .single();
+
+                currentUserRole = profile?.role || 'staff';
+                
+                // Update UI User Profile
+                document.getElementById('userEmailTxt').innerText = session.user.email;
+                document.getElementById('userRoleBadge').innerText = currentUserRole;
+                document.getElementById('userRoleBadge').className = `text-[10px] font-bold uppercase tracking-wider ${currentUserRole === 'admin' ? 'text-rose-400' : 'text-indigo-400'}`;
+                
+                document.getElementById('userProfileArea').classList.remove('hidden');
+                document.getElementById('btnLoginModal').classList.add('hidden');
+
+                if (currentUserRole === 'admin') {
+                    document.getElementById('btnTambahAlat').classList.remove('hidden');
+                } else {
+                    document.getElementById('btnTambahAlat').classList.add('hidden');
+                }
+            } else {
+                currentUserRole = 'guest';
+                document.getElementById('userProfileArea').classList.add('hidden');
+                document.getElementById('btnLoginModal').classList.remove('hidden');
+                document.getElementById('btnTambahAlat').classList.add('hidden');
+            }
+
+            // Toggle table action column visibility
+            const colAksis = document.querySelectorAll('.col-aksi');
+            colAksis.forEach(el => el.style.display = (currentUserRole === 'admin') ? 'table-cell' : 'none');
+        }
+
+        // Handle Login
+        async function handleLogin(e) {
+            e.preventDefault();
+            const email = document.getElementById('loginEmail').value;
+            const password = document.getElementById('loginPassword').value;
+            const btnSubmit = document.getElementById('btnLoginSubmit');
+
+            btnSubmit.disabled = true;
+            btnSubmit.innerText = 'Proses Masuk...';
+
+            const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            btnSubmit.disabled = false;
+            btnSubmit.innerText = 'Masuk Sekarang';
+
+            if (error) {
+                showToast('Login Gagal: ' + error.message, 'error');
+            } else {
+                showToast('Login berhasil!');
+                toggleModal('modalLogin', false);
+                checkAuthState();
+                fetchInventory();
+            }
+        }
+
+        // Handle Logout
+        async function handleLogout() {
+            if (confirm('Apakah Anda yakin ingin keluar?')) {
+                await supabaseClient.auth.signOut();
+                location.reload();
+            }
+        }
+
+        // Fetch Inventory Data
+        async function fetchInventory() {
             if (!supabaseClient) return;
 
+            const { data, error } = await supabaseClient
+                .from('inventaris')
+                .select('*')
+                .order('id_aset', { ascending: true });
+
+            if (error) {
+                console.error(error);
+                showToast('Gagal memuat data: ' + error.message, 'error');
+                return;
+            }
+
+            inventoryData = data || [];
+            updateCategoryOptions();
+            applyFilters();
+            updateStatistics();
+        }
+
+        // Subscribe Realtime Changes
+        function subscribeRealtime() {
+            if (!supabaseClient) return;
             supabaseClient
                 .channel('public:inventaris')
-                .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, (payload) => {
-                    console.log('Real-time change detected:', payload);
-                    fetchData(true); // Silent reload on background update
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'inventaris' }, () => {
+                    fetchInventory();
                 })
                 .subscribe();
         }
 
-        // Update Header Badge Status
-        function updateConnectionStatus(connected, text) {
-            isConnected = connected;
-            const badge = document.getElementById('connectionBadge');
-            const textEl = document.getElementById('connectionText');
-
-            textEl.innerText = text;
-            if (connected) {
-                badge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 transition cursor-pointer";
-                badge.querySelector('span').className = "w-2 h-2 rounded-full bg-emerald-400";
-            } else {
-                badge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition cursor-pointer";
-                badge.querySelector('span').className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
-            }
-        }
-
-        // Fetch Inventory Data from Supabase
-        async function fetchData(silent = false) {
-            if (!supabaseClient) return;
-
-            if (!silent) {
-                const refreshIcon = document.getElementById('refreshIcon');
-                if (refreshIcon) refreshIcon.classList.add('fa-spin');
-            }
-
-            try {
-                const { data, error } = await supabaseClient
-                    .from(TABLE_NAME)
-                    .select('*')
-                    .order('id_aset', { ascending: true });
-
-                if (error) throw error;
-
-                inventoryData = data || [];
-                populateCategoryFilter();
-                updateStatistics();
-                applyFilters();
-
-                if (!silent) showToast("Data inventaris berhasil diperbarui", "success");
-            } catch (err) {
-                console.error("Error fetching data:", err);
-                showToast("Gagal mengambil data dari Supabase: " + err.message, "error");
-            } finally {
-                const refreshIcon = document.getElementById('refreshIcon');
-                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
-            }
-        }
-
-        // Calculate and Render Dashboard Statistics
+        // Update Statistics Cards
         function updateStatistics() {
-            const statJenis = inventoryData.length;
-            let statTotalUnit = 0;
-            let statBaik = 0;
-            let statRusak = 0;
+            const totalJenis = inventoryData.length;
+            const totalUnit = inventoryData.reduce((acc, curr) => acc + (Number(curr.jumlah) || 0), 0);
+            
+            const baikItems = inventoryData.filter(i => i.kondisi === 'Baik');
+            const totalBaikUnit = baikItems.reduce((acc, curr) => acc + (Number(curr.jumlah) || 0), 0);
+            
+            const rusakItems = inventoryData.filter(i => i.kondisi === 'Rusak Ringan' || i.kondisi === 'Rusak Parah');
+            const totalRusakUnit = rusakItems.reduce((acc, curr) => acc + (Number(curr.jumlah) || 0), 0);
 
-            inventoryData.forEach(item => {
-                const qty = parseInt(item.jumlah || 1);
-                statTotalUnit += qty;
+            const persenBaik = totalUnit > 0 ? Math.round((totalBaikUnit / totalUnit) * 100) : 0;
 
-                const status = (item.kondisi || 'Baik').trim();
-                if (status === 'Baik') {
-                    statBaik += qty;
-                } else {
-                    statRusak += qty;
-                }
-            });
-
-            document.getElementById('statJenis').innerText = statJenis.toLocaleString('id-ID');
-            document.getElementById('statTotalUnit').innerText = statTotalUnit.toLocaleString('id-ID');
-            document.getElementById('statBaik').innerText = statBaik.toLocaleString('id-ID');
-            document.getElementById('statRusak').innerText = statRusak.toLocaleString('id-ID');
-
-            const percentBaik = statTotalUnit > 0 ? Math.round((statBaik / statTotalUnit) * 100) : 0;
-            document.getElementById('statBaikPercent').innerText = `${percentBaik}% Unit Siap Pakai`;
+            document.getElementById('statTotalJenis').innerText = totalJenis;
+            document.getElementById('statTotalUnit').innerText = totalUnit;
+            document.getElementById('statKondisiBaik').innerText = totalBaikUnit;
+            document.getElementById('statPersenBaik').innerText = `${persenBaik}% Siap Dipakai`;
+            document.getElementById('statPerluPerbaikan').innerText = totalRusakUnit;
         }
 
-        // Populate Category Filter Options dynamically
-        function populateCategoryFilter() {
-            const categorySelect = document.getElementById('filterKategori');
-            const currentVal = categorySelect.value;
-            
-            const categories = [...new Set(inventoryData.map(i => i.kategori).filter(Boolean))].sort();
-            
-            categorySelect.innerHTML = '<option value="">Semua Kategori</option>';
+        // Populate Category Filter
+        function updateCategoryOptions() {
+            const categories = [...new Set(inventoryData.map(i => i.kategori).filter(Boolean))];
+            const select = document.getElementById('filterKategori');
+            const currentVal = select.value;
+            select.innerHTML = '<option value="">Semua Kategori</option>';
             categories.forEach(cat => {
                 const opt = document.createElement('option');
                 opt.value = cat;
                 opt.innerText = cat;
-                if (cat === currentVal) opt.selected = true;
-                categorySelect.appendChild(opt);
+                select.appendChild(opt);
             });
+            select.value = currentVal;
         }
 
-        // Apply Search & Dropdown Filters
+        // Apply Search & Filters
         function applyFilters() {
-            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
-            const catVal = document.getElementById('filterKategori').value;
-            const kondisiVal = document.getElementById('filterKondisi').value;
+            const search = document.getElementById('searchInput').value.toLowerCase();
+            const cat = document.getElementById('filterKategori').value;
+            const kon = document.getElementById('filterKondisi').value;
 
             const filtered = inventoryData.filter(item => {
-                const matchSearch = !searchVal || 
-                    (item.nama_alat && item.nama_alat.toLowerCase().includes(searchVal)) ||
-                    (item.merek && item.merek.toLowerCase().includes(searchVal)) ||
-                    (item.id_aset && item.id_aset.toLowerCase().includes(searchVal)) ||
-                    (item.spesifikasi && item.spesifikasi.toLowerCase().includes(searchVal));
-
-                const matchCat = !catVal || item.kategori === catVal;
-                const matchKondisi = !kondisiVal || (item.kondisi || 'Baik') === kondisiVal;
-
-                return matchSearch && matchCat && matchKondisi;
+                const matchesSearch = (item.nama_alat || '').toLowerCase().includes(search) ||
+                                      (item.merek || '').toLowerCase().includes(search) ||
+                                      (item.id_aset || '').toLowerCase().includes(search) ||
+                                      (item.spesifikasi || '').toLowerCase().includes(search);
+                const matchesCat = !cat || item.kategori === cat;
+                const matchesKon = !kon || item.kondisi === kon;
+                return matchesSearch && matchesCat && matchesKon;
             });
 
             renderTable(filtered);
-            document.getElementById('filteredCountText').innerText = `Menampilkan ${filtered.length} dari ${inventoryData.length} data`;
         }
 
-        // Render Table Body
+        // Render Inventory Table
         function renderTable(data) {
             const tbody = document.getElementById('inventoryTableBody');
+            const emptyState = document.getElementById('tableEmptyState');
+
             if (data.length === 0) {
-                renderEmptyState("Tidak ada peralatan yang sesuai dengan kriteria pencarian.");
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                emptyState.innerHTML = `<p class="text-slate-400">Tidak ada data alat yang cocok.</p>`;
                 return;
             }
 
-            tbody.innerHTML = data.map(item => {
-                const kondisi = item.kondisi || 'Baik';
-                
-                // Select badge styling
-                let kondisiBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
-                if (kondisi === 'Rusak Ringan') kondisiBg = 'bg-amber-50 text-amber-700 border-amber-200';
-                if (kondisi === 'Rusak Parah') kondisiBg = 'bg-rose-50 text-rose-700 border-rose-200';
-
-                return `
-                    <tr class="hover:bg-slate-50/80 transition group">
-                        <td class="py-3.5 px-4 sm:px-6 font-mono font-bold text-slate-900">
-                            ${escapeHtml(item.id_aset || '-')}
-                        </td>
-                        <td class="py-3.5 px-4 sm:px-6">
-                            <div class="font-bold text-slate-800">${escapeHtml(item.nama_alat)}</div>
-                            <div class="text-xs text-slate-400 mt-0.5">${escapeHtml(item.merek || '-')}</div>
-                        </td>
-                        <td class="py-3.5 px-4 sm:px-6">
-                            <span class="inline-block px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">
-                                ${escapeHtml(item.kategori || 'Umum')}
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-4 sm:px-6 text-center">
-                            <span class="inline-flex items-center justify-center min-w-[32px] px-2 py-1 bg-slate-100 text-slate-800 font-bold rounded-lg text-xs">
-                                ${item.jumlah || 1}
-                            </span>
-                        </td>
-                        <td class="py-3.5 px-4 sm:px-6 text-xs text-slate-500 max-w-xs truncate" title="${escapeHtml(item.spesifikasi || '')}">
-                            ${escapeHtml(item.spesifikasi || '-')}
-                        </td>
-                        <td class="py-3.5 px-4 sm:px-6">
-                            <!-- Interactive Dropdown Checklist -->
-                            <select onchange="updateKondisiDirect('${item.id}', this.value)" 
-                                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer ${kondisiBg}">
-                                <option value="Baik" ${kondisi === 'Baik' ? 'selected' : ''}>🟢 Baik</option>
-                                <option value="Rusak Ringan" ${kondisi === 'Rusak Ringan' ? 'selected' : ''}>🟡 Rusak Ringan</option>
-                                <option value="Rusak Parah" ${kondisi === 'Rusak Parah' ? 'selected' : ''}>🔴 Rusak Parah</option>
-                            </select>
-                        </td>
-                        <td class="py-3.5 px-4 sm:px-6 text-right space-x-1">
-                            <button onclick="editItem('${item.id}')" class="p-2 text-slate-400 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Edit">
-                                <i class="fa-solid fa-pen-to-square"></i>
-                            </button>
-                            <button onclick="deleteItem('${item.id}', '${escapeHtml(item.nama_alat)}')" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Hapus">
-                                <i class="fa-solid fa-trash-can"></i>
-                            </button>
-                        </td>
-                    </tr>
-                `;
-            }).join('');
-        }
-
-        // Render Empty Table State
-        function renderEmptyState(message) {
-            const tbody = document.getElementById('inventoryTableBody');
-            tbody.innerHTML = `
-                <tr>
-                    <td colspan="7" class="py-12 text-center text-slate-400">
-                        <i class="fa-solid fa-inbox text-4xl text-slate-300 mb-3 block"></i>
-                        <p class="text-sm">${message}</p>
+            emptyState.classList.add('hidden');
+            tbody.innerHTML = data.map(item => `
+                <tr class="hover:bg-slate-800/50 transition">
+                    <td class="py-3.5 px-4 font-mono text-xs font-semibold text-indigo-400">${item.id_aset || '-'}</td>
+                    <td class="py-3.5 px-4">
+                        <div class="font-medium text-slate-100">${item.nama_alat}</div>
+                        <div class="text-xs text-slate-400">${item.merek || '-'}</div>
+                    </td>
+                    <td class="py-3.5 px-4">
+                        <span class="inline-block px-2.5 py-1 rounded-md text-xs font-medium bg-slate-700/60 text-slate-300 border border-slate-600/40">
+                            ${item.kategori}
+                        </span>
+                    </td>
+                    <td class="py-3.5 px-4 text-center font-bold text-slate-200">${item.jumlah}</td>
+                    <td class="py-3.5 px-4 text-xs text-slate-400">${item.spesifikasi || '-'}</td>
+                    <td class="py-3.5 px-4">
+                        <select onchange="updateKondisi('${item.id}', this.value)" class="bg-slate-900 border text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none transition ${getKondisiBadgeStyle(item.kondisi)}">
+                            <option value="Baik" ${item.kondisi === 'Baik' ? 'selected' : ''}>🟢 Baik</option>
+                            <option value="Rusak Ringan" ${item.kondisi === 'Rusak Ringan' ? 'selected' : ''}>🟡 Rusak Ringan</option>
+                            <option value="Rusak Parah" ${item.kondisi === 'Rusak Parah' ? 'selected' : ''}>🔴 Rusak Parah</option>
+                        </select>
+                    </td>
+                    <td class="py-3.5 px-4 text-right col-aksi" style="display: ${currentUserRole === 'admin' ? 'table-cell' : 'none'};">
+                        <button onclick="deleteItem('${item.id}')" title="Hapus Alat" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
                     </td>
                 </tr>
-            `;
+            `).join('');
+
+            lucide.createIcons();
         }
 
-        // Real-Time Direct Update of Item Condition via Table Dropdown
-        async function updateKondisiDirect(id, newKondisi) {
-            if (!supabaseClient) {
-                showToast("Pengaturan Supabase belum dikonfigurasi", "error");
-                return;
-            }
-
-            try {
-                const { error } = await supabaseClient
-                    .from(TABLE_NAME)
-                    .update({ kondisi: newKondisi })
-                    .eq('id', id);
-
-                if (error) throw error;
-
-                // Update local memory & stats immediately
-                const item = inventoryData.find(i => i.id == id);
-                if (item) item.kondisi = newKondisi;
-                
-                updateStatistics();
-                applyFilters();
-
-                showToast(`Kondisi ${item ? item.nama_alat : 'peralatan'} diubah ke '${newKondisi}'`, "success");
-            } catch (err) {
-                console.error("Gagal update kondisi:", err);
-                showToast("Gagal memperbarui kondisi: " + err.message, "error");
-                fetchData(true); // Revert UI to DB state on failure
-            }
+        // Helper style for condition dropdown
+        function getKondisiBadgeStyle(kondisi) {
+            if (kondisi === 'Baik') return 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10';
+            if (kondisi === 'Rusak Ringan') return 'border-amber-500/40 text-amber-400 bg-amber-500/10';
+            return 'border-rose-500/40 text-rose-400 bg-rose-500/10';
         }
 
-        // Handle Add & Edit Form Submissions
-        async function handleFormSubmit(event) {
-            event.preventDefault();
-            if (!supabaseClient) {
-                showToast("Hubungkan ke Supabase terlebih dahulu", "error");
-                return;
-            }
-
-            const btn = document.getElementById('btnSubmitForm');
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Menyimpan...';
-
-            const id = document.getElementById('formId').value;
-            const payload = {
-                id_aset: document.getElementById('formIdAset').value.trim(),
-                nama_alat: document.getElementById('formNamaAlat').value.trim(),
-                merek: document.getElementById('formMerek').value.trim(),
-                kategori: document.getElementById('formKategori').value.trim(),
-                jumlah: parseInt(document.getElementById('formJumlah').value) || 1,
-                kondisi: document.getElementById('formKondisi').value,
-                spesifikasi: document.getElementById('formSpesifikasi').value.trim()
-            };
-
-            try {
-                let error;
-                if (id) {
-                    // Update existing
-                    ({ error } = await supabaseClient.from(TABLE_NAME).update(payload).eq('id', id));
-                } else {
-                    // Insert new
-                    ({ error } = await supabaseClient.from(TABLE_NAME).insert([payload]));
-                }
-
-                if (error) throw error;
-
-                showToast(id ? "Peralatan berhasil diperbarui" : "Peralatan baru berhasil ditambahkan", "success");
-                closeFormModal();
-                fetchData();
-            } catch (err) {
-                console.error("Gagal menyimpan data:", err);
-                showToast("Gagal menyimpan: " + err.message, "error");
-            } finally {
-                btn.disabled = false;
-                btn.innerText = 'Simpan Data';
-            }
-        }
-
-        // Edit Item Modal Launcher
-        function editItem(id) {
-            const item = inventoryData.find(i => i.id == id);
-            if (!item) return;
-
-            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-brand-500"></i> Edit Peralatan';
-            document.getElementById('formId').value = item.id;
-            document.getElementById('formIdAset').value = item.id_aset || '';
-            document.getElementById('formNamaAlat').value = item.nama_alat || '';
-            document.getElementById('formMerek').value = item.merek || '';
-            document.getElementById('formKategori').value = item.kategori || '';
-            document.getElementById('formJumlah').value = item.jumlah || 1;
-            document.getElementById('formKondisi').value = item.kondisi || 'Baik';
-            document.getElementById('formSpesifikasi').value = item.spesifikasi || '';
-
-            document.getElementById('formModal').classList.remove('hidden');
-        }
-
-        // Delete Item
-        async function deleteItem(id, nama) {
-            if (!confirm(`Apakah Anda yakin ingin menghapus '${nama}' dari inventaris?`)) return;
+        // Realtime Dropdown Update
+        async function updateKondisi(id, newKondisi) {
             if (!supabaseClient) return;
 
-            try {
-                const { error } = await supabaseClient.from(TABLE_NAME).delete().eq('id', id);
-                if (error) throw error;
+            const { error } = await supabaseClient
+                .from('inventaris')
+                .update({ kondisi: newKondisi })
+                .eq('id', id);
 
-                showToast(`'${nama}' berhasil dihapus`, "success");
-                fetchData();
-            } catch (err) {
-                showToast("Gagal menghapus: " + err.message, "error");
+            if (error) {
+                showToast('Gagal memperbarui kondisi: ' + error.message, 'error');
+                fetchInventory();
+            } else {
+                showToast('Kondisi alat berhasil diperbarui!');
+                // Update local array for fast UI feedback
+                const localItem = inventoryData.find(i => i.id === id);
+                if (localItem) localItem.kondisi = newKondisi;
+                updateStatistics();
             }
         }
 
-        // Form Modal Open/Close
-        function openFormModal() {
-            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-brand-500"></i> Tambah Peralatan Baru';
-            document.getElementById('itemForm').reset();
-            document.getElementById('formId').value = '';
-            document.getElementById('formModal').classList.remove('hidden');
+        // Insert Item (Admin Only)
+        async function handleInsertItem(e) {
+            e.preventDefault();
+            if (currentUserRole !== 'admin') {
+                showToast('Hanya Admin yang dapat menambah barang!', 'error');
+                return;
+            }
+
+            const itemData = {
+                id_aset: document.getElementById('addIdAset').value.trim(),
+                nama_alat: document.getElementById('addNamaAlat').value.trim(),
+                merek: document.getElementById('addMerek').value.trim(),
+                kategori: document.getElementById('addKategori').value.trim(),
+                jumlah: parseInt(document.getElementById('addJumlah').value) || 1,
+                kondisi: document.getElementById('addKondisi').value,
+                spesifikasi: document.getElementById('addSpesifikasi').value.trim() || null
+            };
+
+            const { error } = await supabaseClient.from('inventaris').insert([itemData]);
+
+            if (error) {
+                showToast('Gagal menambah alat: ' + error.message, 'error');
+            } else {
+                showToast('Alat berhasil ditambahkan!');
+                toggleModal('modalTambah', false);
+                e.target.reset();
+                fetchInventory();
+            }
         }
 
-        function closeFormModal() {
-            document.getElementById('formModal').classList.add('hidden');
+        // Delete Item (Admin Only)
+        async function deleteItem(id) {
+            if (currentUserRole !== 'admin') {
+                showToast('Hanya Admin yang dapat menghapus barang!', 'error');
+                return;
+            }
+
+            if (confirm('Yakin ingin menghapus barang ini dari inventaris?')) {
+                const { error } = await supabaseClient.from('inventaris').delete().eq('id', id);
+                if (error) {
+                    showToast('Gagal menghapus: ' + error.message, 'error');
+                } else {
+                    showToast('Alat berhasil dihapus!');
+                    fetchInventory();
+                }
+            }
         }
 
-        // Config Modal Open/Close
-        function openConfigModal() {
-            document.getElementById('configUrl').value = localStorage.getItem('SUPABASE_URL') || '';
-            document.getElementById('configKey').value = localStorage.getItem('SUPABASE_KEY') || '';
-            document.getElementById('configModal').classList.remove('hidden');
+        // Modal Utility
+        function toggleModal(id, show) {
+            const modal = document.getElementById(id);
+            if (show) modal.classList.remove('hidden');
+            else modal.classList.add('hidden');
         }
 
-        function closeConfigModal() {
-            document.getElementById('configModal').classList.add('hidden');
-        }
-
-        function saveConfig(event) {
-            event.preventDefault();
-            const url = document.getElementById('configUrl').value.trim();
-            const key = document.getElementById('configKey').value.trim();
-
-            localStorage.setItem('SUPABASE_URL', url);
-            localStorage.setItem('SUPABASE_KEY', key);
-
-            closeConfigModal();
-            showToast("Konfigurasi Supabase disimpan", "success");
-            initSupabase();
-        }
-
-        // Toast Notification System
-        function showToast(message, type = 'info') {
-            const container = document.getElementById('toastContainer');
+        // Custom Toast Notification
+        function showToast(msg, type = 'success') {
             const toast = document.createElement('div');
-            
-            let bg = 'bg-slate-800 text-white';
-            let icon = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
-            if (type === 'success') {
-                bg = 'bg-emerald-900 text-emerald-100 border border-emerald-700';
-                icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
-            } else if (type === 'error') {
-                bg = 'bg-rose-900 text-rose-100 border border-rose-700';
-                icon = '<i class="fa-solid fa-circle-xmark text-rose-400"></i>';
-            }
-
-            toast.className = `${bg} px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center space-x-3 pointer-events-auto transition-all transform translate-y-2 opacity-0 duration-200`;
-            toast.innerHTML = `${icon}<span>${escapeHtml(message)}</span>`;
-
-            container.appendChild(toast);
-
-            setTimeout(() => {
-                toast.classList.remove('translate-y-2', 'opacity-0');
-            }, 10);
+            toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl font-medium text-sm shadow-2xl transition transform duration-300 flex items-center space-x-2 ${type === 'error' ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'}`;
+            toast.innerHTML = `<span>${msg}</span>`;
+            document.body.appendChild(toast);
 
             setTimeout(() => {
                 toast.classList.add('opacity-0', 'translate-y-2');
-                setTimeout(() => toast.remove(), 200);
-            }, 3500);
-        }
-
-        // Utility: Escape HTML
-        function escapeHtml(str) {
-            if (!str) return '';
-            return String(str)
-                .replace(/&/g, '&amp;')
-                .replace(/</g, '&lt;')
-                .replace(/>/g, '&gt;')
-                .replace(/"/g, '&quot;')
-                .replace(/'/g, '&#039;');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
         }
     </script>
 </body>

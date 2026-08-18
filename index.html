@@ -1,0 +1,763 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventaris Studio & Lab</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- Supabase JS Client -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Plus Jakarta Sans', 'sans-serif'],
+                    },
+                    colors: {
+                        brand: {
+                            50: '#eef2ff',
+                            100: '#e0e7ff',
+                            500: '#6366f1',
+                            600: '#4f46e5',
+                            700: '#4338ca',
+                            900: '#312e81',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+            height: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #f1f5f9;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #cbd5e1;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background: #94a3b8;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans min-h-screen flex flex-col antialiased">
+
+    <!-- Top Navigation Header -->
+    <header class="bg-slate-900 text-white sticky top-0 z-30 shadow-md">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="bg-brand-600 text-white p-2.5 rounded-xl shadow-lg flex items-center justify-center">
+                    <i class="fa-solid fa-boxes-stacked text-xl"></i>
+                </div>
+                <div>
+                    <h1 class="font-bold text-lg tracking-tight leading-none text-white">Inventaris Studio & Lab</h1>
+                    <p class="text-xs text-slate-400 mt-1">Sistem Manajemen Aset Real-Time</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-3">
+                <!-- Supabase Connection Indicator -->
+                <button onclick="openConfigModal()" id="connectionBadge" class="flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition">
+                    <span class="w-2 h-2 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span id="connectionText">Konfigurasi Supabase</span>
+                    <i class="fa-solid fa-gear ml-1"></i>
+                </button>
+
+                <button onclick="openFormModal()" class="bg-brand-600 hover:bg-brand-500 text-white px-4 py-2 rounded-xl text-sm font-semibold shadow-md shadow-brand-600/30 flex items-center space-x-2 transition active:scale-95">
+                    <i class="fa-solid fa-plus"></i>
+                    <span class="hidden sm:inline">Tambah Alat</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1 w-full space-y-6">
+
+        <!-- Notification Toast Container -->
+        <div id="toastContainer" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+
+        <!-- Dashboard Statistics Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+            <!-- Stat 1: Jenis Perangkat -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
+                    <i class="fa-solid fa-layer-group"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Jenis Perangkat</p>
+                    <h3 id="statJenis" class="text-2xl font-extrabold text-slate-900 mt-0.5">0</h3>
+                    <p class="text-xs text-slate-400 mt-1">Item dalam inventaris</p>
+                </div>
+            </div>
+
+            <!-- Stat 2: Total Unit Fisik -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
+                    <i class="fa-solid fa-cubes"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Unit Fisik</p>
+                    <h3 id="statTotalUnit" class="text-2xl font-extrabold text-slate-900 mt-0.5">0</h3>
+                    <p class="text-xs text-slate-400 mt-1">Akumulasi seluruh unit</p>
+                </div>
+            </div>
+
+            <!-- Stat 3: Unit Kondisi Baik -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
+                    <i class="fa-solid fa-circle-check"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Kondisi Baik</p>
+                    <h3 id="statBaik" class="text-2xl font-extrabold text-slate-900 mt-0.5">0</h3>
+                    <p class="text-xs text-blue-600 font-medium mt-1" id="statBaikPercent">0% Siap Dipakai</p>
+                </div>
+            </div>
+
+            <!-- Stat 4: Unit Perlu Perbaikan -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-rose-50 text-rose-600 flex items-center justify-center text-xl font-bold flex-shrink-0">
+                    <i class="fa-solid fa-triangle-exclamation"></i>
+                </div>
+                <div>
+                    <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Perlu Perbaikan</p>
+                    <h3 id="statRusak" class="text-2xl font-extrabold text-slate-900 mt-0.5">0</h3>
+                    <p class="text-xs text-rose-600 font-medium mt-1">Rusak Ringan & Parah</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Search, Filter & Action Bar -->
+        <section class="bg-white p-4 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+            <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <!-- Quick Search Bar -->
+                <div class="relative flex-1">
+                    <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400 text-sm"></i>
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari berdasarkan Nama Alat, Merek, ID Aset, atau Spesifikasi..." 
+                        class="w-full pl-10 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-white transition">
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <!-- Filter Kategori -->
+                    <select id="filterKategori" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
+                        <option value="">Semua Kategori</option>
+                    </select>
+
+                    <!-- Filter Kondisi -->
+                    <select id="filterKondisi" onchange="applyFilters()" class="bg-slate-50 border border-slate-200 text-slate-700 text-sm rounded-xl px-3.5 py-2.5 focus:outline-none focus:ring-2 focus:ring-brand-500 font-medium">
+                        <option value="">Semua Kondisi</option>
+                        <option value="Baik">Baik</option>
+                        <option value="Rusak Ringan">Rusak Ringan</option>
+                        <option value="Rusak Parah">Rusak Parah</option>
+                    </select>
+
+                    <!-- Refresh Button -->
+                    <button onclick="fetchData()" class="p-2.5 bg-slate-100 hover:bg-slate-200 text-slate-600 rounded-xl transition text-sm flex items-center justify-center" title="Refresh Data">
+                        <i class="fa-solid fa-rotate-right" id="refreshIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- Interactive Inventory Table -->
+        <section class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto custom-scrollbar">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-xs font-bold text-slate-500 uppercase tracking-wider">
+                            <th class="py-3.5 px-4 sm:px-6">ID Aset</th>
+                            <th class="py-3.5 px-4 sm:px-6">Nama Alat & Merek</th>
+                            <th class="py-3.5 px-4 sm:px-6">Kategori</th>
+                            <th class="py-3.5 px-4 sm:px-6 text-center">Jumlah</th>
+                            <th class="py-3.5 px-4 sm:px-6">Spesifikasi</th>
+                            <th class="py-3.5 px-4 sm:px-6">Checklist Kondisi</th>
+                            <th class="py-3.5 px-4 sm:px-6 text-right">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody id="inventoryTableBody" class="divide-y divide-slate-100 text-sm text-slate-700">
+                        <!-- Table Rows Rendered via JS -->
+                        <tr>
+                            <td colspan="7" class="py-12 text-center text-slate-400">
+                                <i class="fa-solid fa-circle-notch fa-spin text-2xl text-brand-500 mb-2"></i>
+                                <p>Memuat data inventaris...</p>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Table Footer / Count -->
+            <div class="px-6 py-3 bg-slate-50 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
+                <span id="filteredCountText">Menampilkan 0 data</span>
+                <span class="text-slate-400">Status update otomatis tersinkronisasi ke Supabase</span>
+            </div>
+        </section>
+    </main>
+
+    <!-- Modal Form Tambah / Edit Alat -->
+    <div id="formModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-lg w-full overflow-hidden transform transition-all">
+            <div class="bg-slate-900 px-6 py-4 flex items-center justify-between">
+                <h3 id="modalTitle" class="text-white font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-plus-circle text-brand-500"></i> Tambah Peralatan Baru
+                </h3>
+                <button onclick="closeFormModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="itemForm" onsubmit="handleFormSubmit(event)" class="p-6 space-y-4">
+                <input type="hidden" id="formId">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">ID Aset</label>
+                        <input type="text" id="formIdAset" placeholder="Misal: AUD-010" required
+                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Jumlah Unit</label>
+                        <input type="number" id="formJumlah" min="1" value="1" required
+                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Nama Alat</label>
+                    <input type="text" id="formNamaAlat" placeholder="Nama peralatan studio/lab" required
+                        class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Merek</label>
+                        <input type="text" id="formMerek" placeholder="Merek / Tipe"
+                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold text-slate-600 mb-1">Kategori</label>
+                        <input type="text" id="formKategori" list="kategoriOptions" placeholder="Audio, Kamera, dll" required
+                            class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500">
+                        <datalist id="kategoriOptions">
+                            <option value="Audio">
+                            <option value="Aksesori Audio">
+                            <option value="Aksesori Kamera">
+                            <option value="Daya & Baterai">
+                            <option value="Daya & Kelistrikan">
+                            <option value="Display / Monitor">
+                            <option value="Display / Studio">
+                            <option value="Fasilitas Studio">
+                            <option value="Input Device">
+                            <option value="IT / Server">
+                            <option value="Jaringan & IT">
+                            <option value="Kabel & Adapter">
+                            <option value="Visual / Kamera">
+                            <option value="Video Production">
+                        </datalist>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Kondisi Awal</label>
+                    <select id="formKondisi" required class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 bg-white">
+                        <option value="Baik">Baik</option>
+                        <option value="Rusak Ringan">Rusak Ringan</option>
+                        <option value="Rusak Parah">Rusak Parah</option>
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Spesifikasi / Detail</label>
+                    <textarea id="formSpesifikasi" rows="3" placeholder="Deskripsi spesifikasi teknis peralatan..."
+                        class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"></textarea>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-4 border-t border-slate-100">
+                    <button type="button" onclick="closeFormModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">Batal</button>
+                    <button type="submit" id="btnSubmitForm" class="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-500 rounded-xl shadow-md transition">Simpan Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Config Kredensial Supabase -->
+    <div id="configModal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+        <div class="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden">
+            <div class="bg-slate-900 px-6 py-4 flex items-center justify-between">
+                <h3 class="text-white font-bold text-lg flex items-center gap-2">
+                    <i class="fa-solid fa-plug text-amber-400"></i> Pengaturan Supabase
+                </h3>
+                <button onclick="closeConfigModal()" class="text-slate-400 hover:text-white transition">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form onsubmit="saveConfig(event)" class="p-6 space-y-4">
+                <p class="text-xs text-slate-500 leading-relaxed">Masukkan **Supabase Project URL** dan **Anon Key** Anda dari Dashboard Supabase (Settings > API).</p>
+                
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase URL</label>
+                    <input type="url" id="configUrl" placeholder="https://xyzxyz.supabase.co" required
+                        class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                </div>
+
+                <div>
+                    <label class="block text-xs font-semibold text-slate-600 mb-1">Supabase Anon Key</label>
+                    <input type="text" id="configKey" placeholder="eyJhbGciOiJIUzI1NiIsIn..." required
+                        class="w-full px-3 py-2 border border-slate-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 font-mono">
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs text-slate-600 flex items-start gap-2">
+                    <i class="fa-solid fa-circle-info text-brand-600 mt-0.5"></i>
+                    <span>Kredensial disimpan secara lokal di peramban Anda (localStorage).</span>
+                </div>
+
+                <div class="flex items-center justify-end space-x-3 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeConfigModal()" class="px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 rounded-xl transition">Batal</button>
+                    <button type="submit" class="px-5 py-2 text-sm font-semibold text-white bg-brand-600 hover:bg-brand-500 rounded-xl shadow-md transition">Hubungkan</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Application Script Logic -->
+    <script>
+        // App State
+        let supabaseClient = null;
+        let inventoryData = [];
+        let isConnected = false;
+        const TABLE_NAME = 'inventaris';
+
+        // Initialize App on DOM Load
+        document.addEventListener('DOMContentLoaded', () => {
+            initSupabase();
+        });
+
+        // Initialize Supabase SDK
+        function initSupabase() {
+            const savedUrl = localStorage.getItem('SUPABASE_URL');
+            const savedKey = localStorage.getItem('SUPABASE_KEY');
+
+            if (savedUrl && savedKey) {
+                try {
+                    supabaseClient = supabase.createClient(savedUrl, savedKey);
+                    updateConnectionStatus(true, "Terhubung ke Supabase");
+                    setupRealtimeSubscription();
+                    fetchData();
+                    return;
+                } catch (e) {
+                    console.error("Gagal inisialisasi Supabase:", e);
+                }
+            }
+            
+            // Fallback status if credentials missing
+            updateConnectionStatus(false, "Belum Terhubung");
+            renderEmptyState("Kredensial Supabase belum diatur. Klik tombol 'Konfigurasi Supabase' di pojok kanan atas untuk memasukkan URL & Anon Key Anda.");
+        }
+
+        // Setup Real-time Listener for Instant Checklist Updates
+        function setupRealtimeSubscription() {
+            if (!supabaseClient) return;
+
+            supabaseClient
+                .channel('public:inventaris')
+                .on('postgres_changes', { event: '*', schema: 'public', table: TABLE_NAME }, (payload) => {
+                    console.log('Real-time change detected:', payload);
+                    fetchData(true); // Silent reload on background update
+                })
+                .subscribe();
+        }
+
+        // Update Header Badge Status
+        function updateConnectionStatus(connected, text) {
+            isConnected = connected;
+            const badge = document.getElementById('connectionBadge');
+            const textEl = document.getElementById('connectionText');
+
+            textEl.innerText = text;
+            if (connected) {
+                badge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 hover:bg-emerald-500/30 transition cursor-pointer";
+                badge.querySelector('span').className = "w-2 h-2 rounded-full bg-emerald-400";
+            } else {
+                badge.className = "flex items-center space-x-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-amber-500/20 text-amber-300 border border-amber-500/30 hover:bg-amber-500/30 transition cursor-pointer";
+                badge.querySelector('span').className = "w-2 h-2 rounded-full bg-amber-400 animate-pulse";
+            }
+        }
+
+        // Fetch Inventory Data from Supabase
+        async function fetchData(silent = false) {
+            if (!supabaseClient) return;
+
+            if (!silent) {
+                const refreshIcon = document.getElementById('refreshIcon');
+                if (refreshIcon) refreshIcon.classList.add('fa-spin');
+            }
+
+            try {
+                const { data, error } = await supabaseClient
+                    .from(TABLE_NAME)
+                    .select('*')
+                    .order('id_aset', { ascending: true });
+
+                if (error) throw error;
+
+                inventoryData = data || [];
+                populateCategoryFilter();
+                updateStatistics();
+                applyFilters();
+
+                if (!silent) showToast("Data inventaris berhasil diperbarui", "success");
+            } catch (err) {
+                console.error("Error fetching data:", err);
+                showToast("Gagal mengambil data dari Supabase: " + err.message, "error");
+            } finally {
+                const refreshIcon = document.getElementById('refreshIcon');
+                if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+            }
+        }
+
+        // Calculate and Render Dashboard Statistics
+        function updateStatistics() {
+            const statJenis = inventoryData.length;
+            let statTotalUnit = 0;
+            let statBaik = 0;
+            let statRusak = 0;
+
+            inventoryData.forEach(item => {
+                const qty = parseInt(item.jumlah || 1);
+                statTotalUnit += qty;
+
+                const status = (item.kondisi || 'Baik').trim();
+                if (status === 'Baik') {
+                    statBaik += qty;
+                } else {
+                    statRusak += qty;
+                }
+            });
+
+            document.getElementById('statJenis').innerText = statJenis.toLocaleString('id-ID');
+            document.getElementById('statTotalUnit').innerText = statTotalUnit.toLocaleString('id-ID');
+            document.getElementById('statBaik').innerText = statBaik.toLocaleString('id-ID');
+            document.getElementById('statRusak').innerText = statRusak.toLocaleString('id-ID');
+
+            const percentBaik = statTotalUnit > 0 ? Math.round((statBaik / statTotalUnit) * 100) : 0;
+            document.getElementById('statBaikPercent').innerText = `${percentBaik}% Unit Siap Pakai`;
+        }
+
+        // Populate Category Filter Options dynamically
+        function populateCategoryFilter() {
+            const categorySelect = document.getElementById('filterKategori');
+            const currentVal = categorySelect.value;
+            
+            const categories = [...new Set(inventoryData.map(i => i.kategori).filter(Boolean))].sort();
+            
+            categorySelect.innerHTML = '<option value="">Semua Kategori</option>';
+            categories.forEach(cat => {
+                const opt = document.createElement('option');
+                opt.value = cat;
+                opt.innerText = cat;
+                if (cat === currentVal) opt.selected = true;
+                categorySelect.appendChild(opt);
+            });
+        }
+
+        // Apply Search & Dropdown Filters
+        function applyFilters() {
+            const searchVal = document.getElementById('searchInput').value.toLowerCase().trim();
+            const catVal = document.getElementById('filterKategori').value;
+            const kondisiVal = document.getElementById('filterKondisi').value;
+
+            const filtered = inventoryData.filter(item => {
+                const matchSearch = !searchVal || 
+                    (item.nama_alat && item.nama_alat.toLowerCase().includes(searchVal)) ||
+                    (item.merek && item.merek.toLowerCase().includes(searchVal)) ||
+                    (item.id_aset && item.id_aset.toLowerCase().includes(searchVal)) ||
+                    (item.spesifikasi && item.spesifikasi.toLowerCase().includes(searchVal));
+
+                const matchCat = !catVal || item.kategori === catVal;
+                const matchKondisi = !kondisiVal || (item.kondisi || 'Baik') === kondisiVal;
+
+                return matchSearch && matchCat && matchKondisi;
+            });
+
+            renderTable(filtered);
+            document.getElementById('filteredCountText').innerText = `Menampilkan ${filtered.length} dari ${inventoryData.length} data`;
+        }
+
+        // Render Table Body
+        function renderTable(data) {
+            const tbody = document.getElementById('inventoryTableBody');
+            if (data.length === 0) {
+                renderEmptyState("Tidak ada peralatan yang sesuai dengan kriteria pencarian.");
+                return;
+            }
+
+            tbody.innerHTML = data.map(item => {
+                const kondisi = item.kondisi || 'Baik';
+                
+                // Select badge styling
+                let kondisiBg = 'bg-emerald-50 text-emerald-700 border-emerald-200';
+                if (kondisi === 'Rusak Ringan') kondisiBg = 'bg-amber-50 text-amber-700 border-amber-200';
+                if (kondisi === 'Rusak Parah') kondisiBg = 'bg-rose-50 text-rose-700 border-rose-200';
+
+                return `
+                    <tr class="hover:bg-slate-50/80 transition group">
+                        <td class="py-3.5 px-4 sm:px-6 font-mono font-bold text-slate-900">
+                            ${escapeHtml(item.id_aset || '-')}
+                        </td>
+                        <td class="py-3.5 px-4 sm:px-6">
+                            <div class="font-bold text-slate-800">${escapeHtml(item.nama_alat)}</div>
+                            <div class="text-xs text-slate-400 mt-0.5">${escapeHtml(item.merek || '-')}</div>
+                        </td>
+                        <td class="py-3.5 px-4 sm:px-6">
+                            <span class="inline-block px-2.5 py-1 bg-slate-100 text-slate-600 rounded-lg text-xs font-semibold">
+                                ${escapeHtml(item.kategori || 'Umum')}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 sm:px-6 text-center">
+                            <span class="inline-flex items-center justify-center min-w-[32px] px-2 py-1 bg-slate-100 text-slate-800 font-bold rounded-lg text-xs">
+                                ${item.jumlah || 1}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 sm:px-6 text-xs text-slate-500 max-w-xs truncate" title="${escapeHtml(item.spesifikasi || '')}">
+                            ${escapeHtml(item.spesifikasi || '-')}
+                        </td>
+                        <td class="py-3.5 px-4 sm:px-6">
+                            <!-- Interactive Dropdown Checklist -->
+                            <select onchange="updateKondisiDirect('${item.id}', this.value)" 
+                                class="px-3 py-1.5 rounded-xl text-xs font-bold border transition focus:outline-none focus:ring-2 focus:ring-brand-500 cursor-pointer ${kondisiBg}">
+                                <option value="Baik" ${kondisi === 'Baik' ? 'selected' : ''}>🟢 Baik</option>
+                                <option value="Rusak Ringan" ${kondisi === 'Rusak Ringan' ? 'selected' : ''}>🟡 Rusak Ringan</option>
+                                <option value="Rusak Parah" ${kondisi === 'Rusak Parah' ? 'selected' : ''}>🔴 Rusak Parah</option>
+                            </select>
+                        </td>
+                        <td class="py-3.5 px-4 sm:px-6 text-right space-x-1">
+                            <button onclick="editItem('${item.id}')" class="p-2 text-slate-400 hover:text-brand-600 hover:bg-slate-100 rounded-lg transition" title="Edit">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </button>
+                            <button onclick="deleteItem('${item.id}', '${escapeHtml(item.nama_alat)}')" class="p-2 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition" title="Hapus">
+                                <i class="fa-solid fa-trash-can"></i>
+                            </button>
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+        }
+
+        // Render Empty Table State
+        function renderEmptyState(message) {
+            const tbody = document.getElementById('inventoryTableBody');
+            tbody.innerHTML = `
+                <tr>
+                    <td colspan="7" class="py-12 text-center text-slate-400">
+                        <i class="fa-solid fa-inbox text-4xl text-slate-300 mb-3 block"></i>
+                        <p class="text-sm">${message}</p>
+                    </td>
+                </tr>
+            `;
+        }
+
+        // Real-Time Direct Update of Item Condition via Table Dropdown
+        async function updateKondisiDirect(id, newKondisi) {
+            if (!supabaseClient) {
+                showToast("Pengaturan Supabase belum dikonfigurasi", "error");
+                return;
+            }
+
+            try {
+                const { error } = await supabaseClient
+                    .from(TABLE_NAME)
+                    .update({ kondisi: newKondisi })
+                    .eq('id', id);
+
+                if (error) throw error;
+
+                // Update local memory & stats immediately
+                const item = inventoryData.find(i => i.id == id);
+                if (item) item.kondisi = newKondisi;
+                
+                updateStatistics();
+                applyFilters();
+
+                showToast(`Kondisi ${item ? item.nama_alat : 'peralatan'} diubah ke '${newKondisi}'`, "success");
+            } catch (err) {
+                console.error("Gagal update kondisi:", err);
+                showToast("Gagal memperbarui kondisi: " + err.message, "error");
+                fetchData(true); // Revert UI to DB state on failure
+            }
+        }
+
+        // Handle Add & Edit Form Submissions
+        async function handleFormSubmit(event) {
+            event.preventDefault();
+            if (!supabaseClient) {
+                showToast("Hubungkan ke Supabase terlebih dahulu", "error");
+                return;
+            }
+
+            const btn = document.getElementById('btnSubmitForm');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fa-solid fa-circle-notch fa-spin mr-2"></i>Menyimpan...';
+
+            const id = document.getElementById('formId').value;
+            const payload = {
+                id_aset: document.getElementById('formIdAset').value.trim(),
+                nama_alat: document.getElementById('formNamaAlat').value.trim(),
+                merek: document.getElementById('formMerek').value.trim(),
+                kategori: document.getElementById('formKategori').value.trim(),
+                jumlah: parseInt(document.getElementById('formJumlah').value) || 1,
+                kondisi: document.getElementById('formKondisi').value,
+                spesifikasi: document.getElementById('formSpesifikasi').value.trim()
+            };
+
+            try {
+                let error;
+                if (id) {
+                    // Update existing
+                    ({ error } = await supabaseClient.from(TABLE_NAME).update(payload).eq('id', id));
+                } else {
+                    // Insert new
+                    ({ error } = await supabaseClient.from(TABLE_NAME).insert([payload]));
+                }
+
+                if (error) throw error;
+
+                showToast(id ? "Peralatan berhasil diperbarui" : "Peralatan baru berhasil ditambahkan", "success");
+                closeFormModal();
+                fetchData();
+            } catch (err) {
+                console.error("Gagal menyimpan data:", err);
+                showToast("Gagal menyimpan: " + err.message, "error");
+            } finally {
+                btn.disabled = false;
+                btn.innerText = 'Simpan Data';
+            }
+        }
+
+        // Edit Item Modal Launcher
+        function editItem(id) {
+            const item = inventoryData.find(i => i.id == id);
+            if (!item) return;
+
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-pen-to-square text-brand-500"></i> Edit Peralatan';
+            document.getElementById('formId').value = item.id;
+            document.getElementById('formIdAset').value = item.id_aset || '';
+            document.getElementById('formNamaAlat').value = item.nama_alat || '';
+            document.getElementById('formMerek').value = item.merek || '';
+            document.getElementById('formKategori').value = item.kategori || '';
+            document.getElementById('formJumlah').value = item.jumlah || 1;
+            document.getElementById('formKondisi').value = item.kondisi || 'Baik';
+            document.getElementById('formSpesifikasi').value = item.spesifikasi || '';
+
+            document.getElementById('formModal').classList.remove('hidden');
+        }
+
+        // Delete Item
+        async function deleteItem(id, nama) {
+            if (!confirm(`Apakah Anda yakin ingin menghapus '${nama}' dari inventaris?`)) return;
+            if (!supabaseClient) return;
+
+            try {
+                const { error } = await supabaseClient.from(TABLE_NAME).delete().eq('id', id);
+                if (error) throw error;
+
+                showToast(`'${nama}' berhasil dihapus`, "success");
+                fetchData();
+            } catch (err) {
+                showToast("Gagal menghapus: " + err.message, "error");
+            }
+        }
+
+        // Form Modal Open/Close
+        function openFormModal() {
+            document.getElementById('modalTitle').innerHTML = '<i class="fa-solid fa-plus-circle text-brand-500"></i> Tambah Peralatan Baru';
+            document.getElementById('itemForm').reset();
+            document.getElementById('formId').value = '';
+            document.getElementById('formModal').classList.remove('hidden');
+        }
+
+        function closeFormModal() {
+            document.getElementById('formModal').classList.add('hidden');
+        }
+
+        // Config Modal Open/Close
+        function openConfigModal() {
+            document.getElementById('configUrl').value = localStorage.getItem('SUPABASE_URL') || '';
+            document.getElementById('configKey').value = localStorage.getItem('SUPABASE_KEY') || '';
+            document.getElementById('configModal').classList.remove('hidden');
+        }
+
+        function closeConfigModal() {
+            document.getElementById('configModal').classList.add('hidden');
+        }
+
+        function saveConfig(event) {
+            event.preventDefault();
+            const url = document.getElementById('configUrl').value.trim();
+            const key = document.getElementById('configKey').value.trim();
+
+            localStorage.setItem('SUPABASE_URL', url);
+            localStorage.setItem('SUPABASE_KEY', key);
+
+            closeConfigModal();
+            showToast("Konfigurasi Supabase disimpan", "success");
+            initSupabase();
+        }
+
+        // Toast Notification System
+        function showToast(message, type = 'info') {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            
+            let bg = 'bg-slate-800 text-white';
+            let icon = '<i class="fa-solid fa-circle-info text-blue-400"></i>';
+            if (type === 'success') {
+                bg = 'bg-emerald-900 text-emerald-100 border border-emerald-700';
+                icon = '<i class="fa-solid fa-circle-check text-emerald-400"></i>';
+            } else if (type === 'error') {
+                bg = 'bg-rose-900 text-rose-100 border border-rose-700';
+                icon = '<i class="fa-solid fa-circle-xmark text-rose-400"></i>';
+            }
+
+            toast.className = `${bg} px-4 py-3 rounded-xl shadow-xl text-xs font-semibold flex items-center space-x-3 pointer-events-auto transition-all transform translate-y-2 opacity-0 duration-200`;
+            toast.innerHTML = `${icon}<span>${escapeHtml(message)}</span>`;
+
+            container.appendChild(toast);
+
+            setTimeout(() => {
+                toast.classList.remove('translate-y-2', 'opacity-0');
+            }, 10);
+
+            setTimeout(() => {
+                toast.classList.add('opacity-0', 'translate-y-2');
+                setTimeout(() => toast.remove(), 200);
+            }, 3500);
+        }
+
+        // Utility: Escape HTML
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+    </script>
+</body>
+</html>

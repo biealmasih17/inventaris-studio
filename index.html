@@ -1,50 +1,64 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="id" class="dark">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventaris & Peminjaman Studio</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <!-- Lucide Icons -->
     <script src="https://unpkg.com/lucide@latest"></script>
     <!-- Supabase JS SDK v2 -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
-        .glass-header {
+        .glass-header-dark {
             background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(8px);
+        }
+        .glass-header-light {
+            background: rgba(255, 255, 255, 0.85);
             backdrop-filter: blur(8px);
         }
     </style>
 </head>
-<body class="bg-slate-900 text-slate-100 min-h-screen flex flex-col font-sans">
+<body class="bg-slate-50 dark:bg-slate-900 text-slate-800 dark:text-slate-100 min-h-screen flex flex-col font-sans transition-colors duration-300">
 
     <!-- NAVBAR / HEADER -->
-    <header class="glass-header border-b border-slate-800 sticky top-0 z-40">
+    <header id="appHeader" class="glass-header-dark border-b border-slate-200 dark:border-slate-800 sticky top-0 z-40 transition-colors">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
             <div class="flex items-center space-x-3">
                 <div class="bg-indigo-600 p-2 rounded-lg">
                     <i data-lucide="box" class="w-6 h-6 text-white"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-lg text-white leading-tight">Inventaris Studio & Lab</h1>
-                    <p class="text-xs text-slate-400">Sistem Manajemen Aset & Peminjaman Real-Time</p>
+                    <h1 class="font-bold text-lg text-slate-900 dark:text-white leading-tight">Inventaris Studio & Lab</h1>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Sistem Manajemen Aset & Peminjaman Real-Time</p>
                 </div>
             </div>
 
-            <!-- Profile / Auth State Area -->
+            <!-- Profile & Actions Area -->
             <div class="flex items-center space-x-3">
-                <div id="connectionBadge" class="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                <!-- TOGGLE THEME BUTTON (LIGHT / DARK) -->
+                <button onclick="toggleTheme()" id="btnThemeToggle" title="Ubah Tema" class="p-2 text-slate-600 dark:text-slate-300 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition flex items-center justify-center">
+                    <i id="themeIcon" data-lucide="sun" class="w-5 h-5 text-amber-500"></i>
+                </button>
+
+                <div id="connectionBadge" class="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border border-emerald-500/20">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>Terhubung</span>
                 </div>
 
-                <div id="userProfileArea" class="hidden flex items-center space-x-3 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5">
+                <div id="userProfileArea" class="hidden flex items-center space-x-3 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg px-3 py-1.5">
                     <div class="text-right">
-                        <div id="userEmailTxt" class="text-xs font-semibold text-slate-200">user@example.com</div>
-                        <div id="userRoleBadge" class="text-[10px] font-bold text-indigo-400 uppercase tracking-wider">STAFF</div>
+                        <div id="userEmailTxt" class="text-xs font-semibold text-slate-700 dark:text-slate-200">user@example.com</div>
+                        <div id="userRoleBadge" class="text-[10px] font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">STAFF</div>
                     </div>
-                    <button onclick="handleLogout()" title="Keluar" class="text-slate-400 hover:text-rose-400 transition">
+                    <button onclick="handleLogout()" title="Keluar" class="text-slate-400 hover:text-rose-500 transition">
                         <i data-lucide="log-out" class="w-4 h-4"></i>
                     </button>
                 </div>
@@ -61,12 +75,12 @@
     <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
         <!-- NAVIGASI TAB -->
-        <div class="flex border-b border-slate-800 space-x-4">
-            <button id="tabBtnInventaris" onclick="switchTab('inventaris')" class="pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center space-x-2 transition">
+        <div class="flex border-b border-slate-200 dark:border-slate-800 space-x-4">
+            <button id="tabBtnInventaris" onclick="switchTab('inventaris')" class="pb-3 text-sm font-semibold border-b-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 flex items-center space-x-2 transition">
                 <i data-lucide="list" class="w-4 h-4"></i>
                 <span>Data Inventaris Aset</span>
             </button>
-            <button id="tabBtnPeminjaman" onclick="switchTab('peminjaman')" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition">
+            <button id="tabBtnPeminjaman" onclick="switchTab('peminjaman')" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center space-x-2 transition">
                 <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
                 <span>Peminjaman & Pengembalian</span>
             </button>
@@ -76,64 +90,64 @@
         <div id="tabContentInventaris" class="space-y-6">
             <!-- DASHBOARD STATISTIK INVENTARIS -->
             <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 p-5 rounded-xl shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Jenis Perangkat</p>
-                        <h3 id="statTotalJenis" class="text-2xl font-bold text-white mt-1">0</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Item dalam inventaris</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Jenis Perangkat</p>
+                        <h3 id="statTotalJenis" class="text-2xl font-bold text-slate-900 dark:text-white mt-1">0</h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Item dalam inventaris</p>
                     </div>
-                    <div class="bg-indigo-500/10 p-3 rounded-lg border border-indigo-500/20 text-indigo-400">
+                    <div class="bg-indigo-500/10 p-3 rounded-lg border border-indigo-500/20 text-indigo-600 dark:text-indigo-400">
                         <i data-lucide="layers" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 p-5 rounded-xl shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Unit Fisik</p>
-                        <h3 id="statTotalUnit" class="text-2xl font-bold text-white mt-1">0</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Akumulasi seluruh unit</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Unit Fisik</p>
+                        <h3 id="statTotalUnit" class="text-2xl font-bold text-slate-900 dark:text-white mt-1">0</h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Akumulasi seluruh unit</p>
                     </div>
-                    <div class="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20 text-blue-400">
+                    <div class="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20 text-blue-600 dark:text-blue-400">
                         <i data-lucide="package" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 p-5 rounded-xl shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Kondisi Baik</p>
-                        <h3 id="statKondisiBaik" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
-                        <p id="statPersenBaik" class="text-xs text-emerald-500 mt-0.5">0% Siap Dipakai</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Kondisi Baik</p>
+                        <h3 id="statKondisiBaik" class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">0</h3>
+                        <p id="statPersenBaik" class="text-xs text-emerald-600 dark:text-emerald-500 mt-0.5">0% Siap Dipakai</p>
                     </div>
-                    <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-emerald-400">
+                    <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                         <i data-lucide="check-circle" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 p-5 rounded-xl shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Perlu Perbaikan</p>
-                        <h3 id="statPerluPerbaikan" class="text-2xl font-bold text-rose-400 mt-1">0</h3>
-                        <p class="text-xs text-rose-500 mt-0.5">Rusak Ringan & Parah</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Perlu Perbaikan</p>
+                        <h3 id="statPerluPerbaikan" class="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-1">0</h3>
+                        <p class="text-xs text-rose-600 dark:text-rose-500 mt-0.5">Rusak Ringan & Parah</p>
                     </div>
-                    <div class="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 text-rose-400">
+                    <div class="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 text-rose-600 dark:text-rose-400">
                         <i data-lucide="alert-triangle" class="w-6 h-6"></i>
                     </div>
                 </div>
             </div>
 
             <!-- TOOLBAR & FILTER -->
-            <div class="bg-slate-800/40 border border-slate-700/60 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+            <div class="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
                 <div class="relative w-full md:w-96">
                     <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari Nama Alat, Merek, ID Aset..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari Nama Alat, Merek, ID Aset..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-                    <select id="filterKategori" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    <select id="filterKategori" onchange="applyFilters()" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
                         <option value="">Semua Kategori</option>
                     </select>
 
-                    <select id="filterKondisi" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                    <select id="filterKondisi" onchange="applyFilters()" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
                         <option value="">Semua Kondisi</option>
                         <option value="Baik">Baik</option>
                         <option value="Rusak Ringan">Rusak Ringan</option>
@@ -148,20 +162,20 @@
             </div>
 
             <!-- TABEL DATA ALAT -->
-            <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
+            <div class="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700/60 select-none">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-100 dark:bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/60 select-none">
                             <tr>
-                                <th onclick="sortTable('id_aset')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">ID Aset</th>
-                                <th onclick="sortTable('nama_alat')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">Nama Alat & Merek</th>
-                                <th onclick="sortTable('kategori')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">Kategori</th>
+                                <th onclick="sortTable('id_aset')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">ID Aset</th>
+                                <th onclick="sortTable('nama_alat')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">Nama Alat & Merek</th>
+                                <th onclick="sortTable('kategori')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">Kategori</th>
                                 <th class="py-3.5 px-4">Spesifikasi</th>
-                                <th onclick="sortTable('kondisi')" class="py-3.5 px-4 min-w-[160px] cursor-pointer hover:text-indigo-400 transition">Checklist Kondisi</th>
+                                <th onclick="sortTable('kondisi')" class="py-3.5 px-4 min-w-[160px] cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">Checklist Kondisi</th>
                                 <th class="py-3.5 px-4 text-right">Opsi Pinjam / Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="inventoryTableBody" class="divide-y divide-slate-700/40"></tbody>
+                        <tbody id="inventoryTableBody" class="divide-y divide-slate-200 dark:divide-slate-700/40"></tbody>
                     </table>
                 </div>
                 <div id="tableEmptyState" class="p-12 text-center text-slate-400">
@@ -175,45 +189,45 @@
         <div id="tabContentPeminjaman" class="space-y-6 hidden">
             <!-- DASHBOARD STATISTIK PEMINJAMAN -->
             <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 p-5 rounded-xl shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sedang Dipinjam</p>
-                        <h3 id="statDipinjam" class="text-2xl font-bold text-amber-400 mt-1">0</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Barang di luar studio</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Sedang Dipinjam</p>
+                        <h3 id="statDipinjam" class="text-2xl font-bold text-amber-600 dark:text-amber-400 mt-1">0</h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Barang di luar studio</p>
                     </div>
-                    <div class="bg-amber-500/10 p-3 rounded-lg border border-amber-500/20 text-amber-400">
+                    <div class="bg-amber-500/10 p-3 rounded-lg border border-amber-500/20 text-amber-600 dark:text-amber-400">
                         <i data-lucide="clock" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 p-5 rounded-xl shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Peminjaman Terlambat</p>
-                        <h3 id="statTerlambat" class="text-2xl font-bold text-rose-400 mt-1">0</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Lewat estimasi kembali</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Peminjaman Terlambat</p>
+                        <h3 id="statTerlambat" class="text-2xl font-bold text-rose-600 dark:text-rose-400 mt-1">0</h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Lewat estimasi kembali</p>
                     </div>
-                    <div class="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 text-rose-400">
+                    <div class="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 text-rose-600 dark:text-rose-400">
                         <i data-lucide="alert-circle" class="w-6 h-6"></i>
                     </div>
                 </div>
 
-                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                <div class="bg-white dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700/60 p-5 rounded-xl shadow-sm flex items-center justify-between">
                     <div>
-                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Peminjaman Selesai</p>
-                        <h3 id="statSelesai" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
-                        <p class="text-xs text-slate-500 mt-0.5">Riwayat kembali</p>
+                        <p class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Total Peminjaman Selesai</p>
+                        <h3 id="statSelesai" class="text-2xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">0</h3>
+                        <p class="text-xs text-slate-400 dark:text-slate-500 mt-0.5">Riwayat kembali</p>
                     </div>
-                    <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-emerald-400">
+                    <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-emerald-600 dark:text-emerald-400">
                         <i data-lucide="check-check" class="w-6 h-6"></i>
                     </div>
                 </div>
             </div>
 
             <!-- TOOLBAR PEMINJAMAN -->
-            <div class="bg-slate-800/40 border border-slate-700/60 p-4 rounded-xl flex flex-col sm:flex-row gap-4 items-center justify-between">
+            <div class="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 p-4 rounded-xl shadow-sm flex flex-col sm:flex-row gap-4 items-center justify-between">
                 <div class="relative w-full sm:w-80">
                     <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-                    <input type="text" id="searchPinjamInput" oninput="renderPeminjamanTable()" placeholder="Cari Nama Peminjam, Barang..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                    <input type="text" id="searchPinjamInput" oninput="renderPeminjamanTable()" placeholder="Cari Nama Peminjam, Barang..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <button onclick="openModalPinjam()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
@@ -223,10 +237,10 @@
             </div>
 
             <!-- TABEL RIWAYAT PEMINJAMAN -->
-            <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
+            <div class="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
                 <div class="overflow-x-auto">
-                    <table class="w-full text-left text-sm text-slate-300">
-                        <thead class="bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700/60">
+                    <table class="w-full text-left text-sm text-slate-600 dark:text-slate-300">
+                        <thead class="bg-slate-100 dark:bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-500 dark:text-slate-400 border-b border-slate-200 dark:border-slate-700/60">
                             <tr>
                                 <th class="py-3.5 px-4">Peminjam & Kontak</th>
                                 <th class="py-3.5 px-4">Barang Dipinjam</th>
@@ -236,7 +250,7 @@
                                 <th class="py-3.5 px-4 text-right">Aksi</th>
                             </tr>
                         </thead>
-                        <tbody id="peminjamanTableBody" class="divide-y divide-slate-700/40"></tbody>
+                        <tbody id="peminjamanTableBody" class="divide-y divide-slate-200 dark:divide-slate-700/40"></tbody>
                     </table>
                 </div>
                 <div id="pinjamEmptyState" class="p-12 text-center text-slate-400">
@@ -249,22 +263,22 @@
 
     <!-- MODAL LOGIN -->
     <div id="modalLogin" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
-                <h3 class="font-bold text-white text-lg flex items-center space-x-2">
-                    <i data-lucide="log-in" class="w-5 h-5 text-indigo-400"></i>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="log-in" class="w-5 h-5 text-indigo-500"></i>
                     <span>Masuk ke Sistem</span>
                 </h3>
-                <button onclick="toggleModal('modalLogin', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="toggleModal('modalLogin', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="handleLogin(event)" class="space-y-3">
                 <div>
-                    <label class="text-xs font-medium text-slate-300">Email Akun</label>
-                    <input type="email" id="loginEmail" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Email Akun</label>
+                    <input type="email" id="loginEmail" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-300">Password</label>
-                    <input type="password" id="loginPassword" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Password</label>
+                    <input type="password" id="loginPassword" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
                 <div class="pt-2">
                     <button type="submit" id="btnLoginSubmit" class="w-full py-2.5 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium shadow-lg shadow-indigo-600/30">Masuk Sekarang</button>
@@ -273,151 +287,149 @@
         </div>
     </div>
 
-    <!-- MODAL TAMBAH ALAT (ADMIN) -->
+    <!-- MODAL TAMBAH ALAT -->
     <div id="modalTambah" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
-                <h3 class="font-bold text-white text-lg flex items-center space-x-2">
-                    <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-400"></i>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="plus-circle" class="w-5 h-5 text-indigo-500"></i>
                     <span>Tambah Peralatan Baru</span>
                 </h3>
-                <button onclick="toggleModal('modalTambah', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="toggleModal('modalTambah', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="handleInsertItem(event)" class="space-y-3">
                 <div>
-                    <label class="text-xs font-medium text-slate-300">ID Aset Unik</label>
-                    <input type="text" id="addIdAset" required placeholder="AUD-010-1" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">ID Aset Unik</label>
+                    <input type="text" id="addIdAset" required placeholder="AUD-010-1" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-300">Nama Alat</label>
-                    <input type="text" id="addNamaAlat" required placeholder="Mikrofon Wireless #1" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Nama Alat</label>
+                    <input type="text" id="addNamaAlat" required placeholder="Mikrofon Wireless #1" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-medium text-slate-300">Merek / Tipe</label>
-                        <input type="text" id="addMerek" placeholder="Saramonic Blink 500" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Merek / Tipe</label>
+                        <input type="text" id="addMerek" placeholder="Saramonic Blink 500" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-300">Kategori</label>
-                        <input type="text" id="addKategori" required placeholder="Audio" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Kategori</label>
+                        <input type="text" id="addKategori" required placeholder="Audio" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-medium text-slate-300">Kondisi Awal</label>
-                        <select id="addKondisi" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Kondisi Awal</label>
+                        <select id="addKondisi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                             <option value="Baik">Baik</option>
                             <option value="Rusak Ringan">Rusak Ringan</option>
                             <option value="Rusak Parah">Rusak Parah</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-300">Spesifikasi (Opsional)</label>
-                        <input type="text" id="addSpesifikasi" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Spesifikasi (Opsional)</label>
+                        <input type="text" id="addSpesifikasi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                     </div>
                 </div>
-                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-700">
-                    <button type="button" onclick="toggleModal('modalTambah', false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white">Batal</button>
+                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="toggleModal('modalTambah', false)" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Batal</button>
                     <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Simpan Alat</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL EDIT ALAT (ADMIN) -->
+    <!-- MODAL EDIT ALAT -->
     <div id="modalEdit" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
-                <h3 class="font-bold text-white text-lg flex items-center space-x-2">
-                    <i data-lucide="edit-3" class="w-5 h-5 text-indigo-400"></i>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-indigo-500"></i>
                     <span>Edit Data Peralatan</span>
                 </h3>
-                <button onclick="toggleModal('modalEdit', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="toggleModal('modalEdit', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="handleUpdateItem(event)" class="space-y-3">
                 <input type="hidden" id="editUuid">
                 <div>
-                    <label class="text-xs font-medium text-slate-300">ID Aset</label>
-                    <input type="text" id="editIdAset" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">ID Aset</label>
+                    <input type="text" id="editIdAset" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-300">Nama Alat</label>
-                    <input type="text" id="editNamaAlat" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Nama Alat</label>
+                    <input type="text" id="editNamaAlat" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-medium text-slate-300">Merek / Tipe</label>
-                        <input type="text" id="editMerek" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Merek / Tipe</label>
+                        <input type="text" id="editMerek" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-300">Kategori</label>
-                        <input type="text" id="editKategori" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Kategori</label>
+                        <input type="text" id="editKategori" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                     </div>
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-medium text-slate-300">Kondisi</label>
-                        <select id="editKondisi" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Kondisi</label>
+                        <select id="editKondisi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                             <option value="Baik">Baik</option>
                             <option value="Rusak Ringan">Rusak Ringan</option>
                             <option value="Rusak Parah">Rusak Parah</option>
                         </select>
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-300">Spesifikasi</label>
-                        <input type="text" id="editSpesifikasi" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Spesifikasi</label>
+                        <input type="text" id="editSpesifikasi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                     </div>
                 </div>
-                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-700">
-                    <button type="button" onclick="toggleModal('modalEdit', false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white">Batal</button>
+                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="toggleModal('modalEdit', false)" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Batal</button>
                     <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Perbarui Data</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL CATAT PEMINJAMAN BARU (SEKARANG DENGAN SEARCH AUTO-COMPLETE) -->
+    <!-- MODAL CATAT PEMINJAMAN -->
     <div id="modalPinjam" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
-        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
-            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
-                <h3 class="font-bold text-white text-lg flex items-center space-x-2">
-                    <i data-lucide="arrow-left-right" class="w-5 h-5 text-indigo-400"></i>
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5 text-indigo-500"></i>
                     <span>Catat Peminjaman Barang</span>
                 </h3>
-                <button onclick="toggleModal('modalPinjam', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+                <button onclick="toggleModal('modalPinjam', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="handleCreatePeminjaman(event)" class="space-y-3">
                 <input type="hidden" id="pinjamInventarisId" required>
                 
-                <!-- AUTOCOMPLETE BARANG SEARCH -->
                 <div class="relative">
-                    <label class="text-xs font-medium text-slate-300">Pilih Barang (Ketik Nama / ID Aset)</label>
-                    <input type="text" id="pinjamBarangSearch" oninput="filterBarangSearch()" placeholder="Ketik untuk mencari (misal: Tripod, Lensa)..." autocomplete="off" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Pilih Barang (Ketik Nama / ID Aset)</label>
+                    <input type="text" id="pinjamBarangSearch" oninput="filterBarangSearch()" placeholder="Ketik untuk mencari (misal: Tripod, Lensa)..." autocomplete="off" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
                     
-                    <!-- DROPDOWN LIST HASIL SEARCH -->
-                    <div id="pinjamSearchResults" class="absolute left-0 right-0 top-full mt-1 bg-slate-900 border border-slate-700 rounded-lg max-h-48 overflow-y-auto hidden z-50 divide-y divide-slate-800 shadow-xl"></div>
+                    <div id="pinjamSearchResults" class="absolute left-0 right-0 top-full mt-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg max-h-48 overflow-y-auto hidden z-50 divide-y divide-slate-100 dark:divide-slate-800 shadow-xl"></div>
                 </div>
 
                 <div class="grid grid-cols-2 gap-3">
                     <div>
-                        <label class="text-xs font-medium text-slate-300">Nama Peminjam</label>
-                        <input type="text" id="pinjamNama" required placeholder="Budi Santoso" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Nama Peminjam</label>
+                        <input type="text" id="pinjamNama" required placeholder="Budi Santoso" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                     </div>
                     <div>
-                        <label class="text-xs font-medium text-slate-300">No. WhatsApp / Kontak</label>
-                        <input type="text" id="pinjamKontak" required placeholder="08123456789" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">No. WhatsApp / Kontak</label>
+                        <input type="text" id="pinjamKontak" required placeholder="08123456789" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                     </div>
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-300">Kegiatan / Keperluan</label>
-                    <input type="text" id="pinjamKegiatan" placeholder="Syuting Video Klip di Luar Studio" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Kegiatan / Keperluan</label>
+                    <input type="text" id="pinjamKegiatan" placeholder="Syuting Video Klip di Luar Studio" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
                 <div>
-                    <label class="text-xs font-medium text-slate-300">Estimasi Tgl Pengembalian</label>
-                    <input type="date" id="pinjamEstimasi" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Estimasi Tgl Pengembalian</label>
+                    <input type="date" id="pinjamEstimasi" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
-                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-700">
-                    <button type="button" onclick="toggleModal('modalPinjam', false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white">Batal</button>
+                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="toggleModal('modalPinjam', false)" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Batal</button>
                     <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Proses Pinjam</button>
                 </div>
             </form>
@@ -438,9 +450,46 @@
         let isSortAsc = true;
 
         window.addEventListener('DOMContentLoaded', () => {
+            initTheme();
             lucide.createIcons();
             initSupabase();
         });
+
+        // Theme Toggle Logic
+        function initTheme() {
+            const savedTheme = localStorage.getItem('theme') || 'dark';
+            applyTheme(savedTheme);
+        }
+
+        function toggleTheme() {
+            const isDark = document.documentElement.classList.contains('dark');
+            const newTheme = isDark ? 'light' : 'dark';
+            localStorage.setItem('theme', newTheme);
+            applyTheme(newTheme);
+        }
+
+        function applyTheme(theme) {
+            const html = document.documentElement;
+            const appHeader = document.getElementById('appHeader');
+            const themeIcon = document.getElementById('themeIcon');
+
+            if (theme === 'dark') {
+                html.classList.add('dark');
+                appHeader.className = "glass-header-dark border-b border-slate-800 sticky top-0 z-40 transition-colors";
+                if (themeIcon) {
+                    themeIcon.setAttribute('data-lucide', 'sun');
+                    themeIcon.className = "w-5 h-5 text-amber-400";
+                }
+            } else {
+                html.classList.remove('dark');
+                appHeader.className = "glass-header-light border-b border-slate-200 sticky top-0 z-40 transition-colors";
+                if (themeIcon) {
+                    themeIcon.setAttribute('data-lucide', 'moon');
+                    themeIcon.className = "w-5 h-5 text-indigo-600";
+                }
+            }
+            lucide.createIcons();
+        }
 
         function initSupabase() {
             try {
@@ -464,13 +513,13 @@
             if (tabName === 'inventaris') {
                 tabInv.classList.remove('hidden');
                 tabPin.classList.add('hidden');
-                btnInv.className = "pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center space-x-2 transition";
-                btnPin.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition";
+                btnInv.className = "pb-3 text-sm font-semibold border-b-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 flex items-center space-x-2 transition";
+                btnPin.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center space-x-2 transition";
             } else {
                 tabInv.classList.add('hidden');
                 tabPin.classList.remove('hidden');
-                btnPin.className = "pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center space-x-2 transition";
-                btnInv.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition";
+                btnPin.className = "pb-3 text-sm font-semibold border-b-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 flex items-center space-x-2 transition";
+                btnInv.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-500 dark:text-slate-400 hover:text-slate-800 dark:hover:text-slate-200 flex items-center space-x-2 transition";
             }
         }
 
@@ -489,7 +538,7 @@
                 
                 document.getElementById('userEmailTxt').innerText = session.user.email;
                 document.getElementById('userRoleBadge').innerText = currentUserRole;
-                document.getElementById('userRoleBadge').className = `text-[10px] font-bold uppercase tracking-wider ${currentUserRole === 'admin' ? 'text-rose-400' : 'text-indigo-400'}`;
+                document.getElementById('userRoleBadge').className = `text-[10px] font-bold uppercase tracking-wider ${currentUserRole === 'admin' ? 'text-rose-500 dark:text-rose-400' : 'text-indigo-600 dark:text-indigo-400'}`;
                 
                 document.getElementById('userProfileArea').classList.remove('hidden');
                 document.getElementById('btnLoginModal').classList.add('hidden');
@@ -578,7 +627,7 @@
             peminjamanData = data || [];
             renderPeminjamanTable();
             updatePeminjamanStats();
-            applyFilters(); // Re-render inventaris untuk update status dipinjam
+            applyFilters();
         }
 
         function subscribeRealtime() {
@@ -674,7 +723,6 @@
             renderTable(filtered);
         }
 
-        // Render Table Utama dengan Tombol Pinjam Cepat
         function renderTable(data) {
             const tbody = document.getElementById('inventoryTableBody');
             const emptyState = document.getElementById('tableEmptyState');
@@ -688,7 +736,6 @@
 
             emptyState.classList.add('hidden');
 
-            // ID Barang yang sedang dipinjam
             const activePinjamIds = peminjamanData
                 .filter(p => p.status === 'Dipinjam' || p.status === 'Terlambat')
                 .map(p => p.inventaris_id);
@@ -697,20 +744,20 @@
                 const isDipinjam = activePinjamIds.includes(item.id);
 
                 return `
-                    <tr class="hover:bg-slate-800/50 transition">
-                        <td class="py-3.5 px-4 font-mono text-xs font-semibold text-indigo-400">${item.id_aset || '-'}</td>
+                    <tr class="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition">
+                        <td class="py-3.5 px-4 font-mono text-xs font-semibold text-indigo-600 dark:text-indigo-400">${item.id_aset || '-'}</td>
                         <td class="py-3.5 px-4">
-                            <div class="font-medium text-slate-100">${item.nama_alat}</div>
-                            <div class="text-xs text-slate-400">${item.merek || '-'}</div>
+                            <div class="font-medium text-slate-900 dark:text-slate-100">${item.nama_alat}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">${item.merek || '-'}</div>
                         </td>
                         <td class="py-3.5 px-4">
-                            <span class="inline-block px-2.5 py-1 rounded-md text-xs font-medium bg-slate-700/60 text-slate-300 border border-slate-600/40">
+                            <span class="inline-block px-2.5 py-1 rounded-md text-xs font-medium bg-slate-200 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600/40">
                                 ${item.kategori}
                             </span>
                         </td>
-                        <td class="py-3.5 px-4 text-xs text-slate-400">${item.spesifikasi || '-'}</td>
+                        <td class="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400">${item.spesifikasi || '-'}</td>
                         <td class="py-3.5 px-4">
-                            <select onchange="updateKondisi('${item.id}', this.value)" class="bg-slate-900 border text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none transition ${getKondisiBadgeStyle(item.kondisi)}">
+                            <select onchange="updateKondisi('${item.id}', this.value)" class="bg-slate-50 dark:bg-slate-900 border text-xs font-semibold rounded-lg px-2.5 py-1.5 focus:outline-none transition ${getKondisiBadgeStyle(item.kondisi)}">
                                 <option value="Baik" ${item.kondisi === 'Baik' ? 'selected' : ''}>🟢 Baik</option>
                                 <option value="Rusak Ringan" ${item.kondisi === 'Rusak Ringan' ? 'selected' : ''}>🟡 Rusak Ringan</option>
                                 <option value="Rusak Parah" ${item.kondisi === 'Rusak Parah' ? 'selected' : ''}>🔴 Rusak Parah</option>
@@ -719,7 +766,7 @@
                         <td class="py-3.5 px-4 text-right">
                             <div class="flex items-center justify-end space-x-2">
                                 ${isDipinjam ? `
-                                    <span class="px-2.5 py-1 text-xs font-semibold text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg">
+                                    <span class="px-2.5 py-1 text-xs font-semibold text-amber-700 dark:text-amber-400 bg-amber-500/10 border border-amber-500/30 rounded-lg">
                                         Sedang Dipinjam
                                     </span>
                                 ` : `
@@ -730,10 +777,10 @@
                                 `}
 
                                 ${currentUserRole === 'admin' ? `
-                                    <button onclick="openEditModal('${item.id}')" title="Edit Alat" class="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition">
+                                    <button onclick="openEditModal('${item.id}')" title="Edit Alat" class="p-1.5 text-slate-400 hover:text-indigo-600 dark:hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition">
                                         <i data-lucide="edit-2" class="w-4 h-4"></i>
                                     </button>
-                                    <button onclick="deleteItem('${item.id}')" title="Hapus Alat" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition">
+                                    <button onclick="deleteItem('${item.id}')" title="Hapus Alat" class="p-1.5 text-slate-400 hover:text-rose-600 dark:hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition">
                                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                                     </button>
                                 ` : ''}
@@ -746,7 +793,6 @@
             lucide.createIcons();
         }
 
-        // Render Tabel Peminjaman
         function renderPeminjamanTable() {
             const search = document.getElementById('searchPinjamInput').value.toLowerCase();
             const tbody = document.getElementById('peminjamanTableBody');
@@ -771,20 +817,20 @@
             tbody.innerHTML = filtered.map(p => {
                 const isTerlambat = p.status === 'Dipinjam' && p.estimasi_kembali < today;
                 const statusTxt = p.status === 'Selesai' ? '🟢 Selesai' : (isTerlambat ? '🔴 Terlambat' : '🟡 Dipinjam');
-                const statusStyle = p.status === 'Selesai' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : (isTerlambat ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse' : 'bg-amber-500/10 text-amber-400 border-amber-500/30');
+                const statusStyle = p.status === 'Selesai' ? 'bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 border-emerald-500/30' : (isTerlambat ? 'bg-rose-500/10 text-rose-600 dark:text-rose-400 border-rose-500/30 animate-pulse' : 'bg-amber-500/10 text-amber-600 dark:text-amber-400 border-amber-500/30');
 
                 return `
-                    <tr class="hover:bg-slate-800/50 transition">
+                    <tr class="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition">
                         <td class="py-3.5 px-4">
-                            <div class="font-medium text-slate-100">${p.nama_peminjam}</div>
-                            <div class="text-xs text-slate-400">${p.kontak_peminjam || '-'}</div>
+                            <div class="font-medium text-slate-900 dark:text-slate-100">${p.nama_peminjam}</div>
+                            <div class="text-xs text-slate-500 dark:text-slate-400">${p.kontak_peminjam || '-'}</div>
                         </td>
                         <td class="py-3.5 px-4">
-                            <div class="font-medium text-indigo-400 font-mono text-xs">${p.inventaris?.id_aset || '-'}</div>
-                            <div class="text-xs text-slate-200">${p.inventaris?.nama_alat || 'Barang Dihapus'}</div>
+                            <div class="font-medium text-indigo-600 dark:text-indigo-400 font-mono text-xs">${p.inventaris?.id_aset || '-'}</div>
+                            <div class="text-xs text-slate-700 dark:text-slate-200">${p.inventaris?.nama_alat || 'Barang Dihapus'}</div>
                         </td>
-                        <td class="py-3.5 px-4 text-xs text-slate-400">${new Date(p.tanggal_pinjam).toLocaleDateString('id-ID')}</td>
-                        <td class="py-3.5 px-4 text-xs font-semibold ${isTerlambat ? 'text-rose-400' : 'text-slate-300'}">${new Date(p.estimasi_kembali).toLocaleDateString('id-ID')}</td>
+                        <td class="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400">${new Date(p.tanggal_pinjam).toLocaleDateString('id-ID')}</td>
+                        <td class="py-3.5 px-4 text-xs font-semibold ${isTerlambat ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300'}">${new Date(p.estimasi_kembali).toLocaleDateString('id-ID')}</td>
                         <td class="py-3.5 px-4">
                             <span class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold border ${statusStyle}">
                                 ${statusTxt}
@@ -796,7 +842,7 @@
                                     <i data-lucide="check" class="w-3.5 h-3.5"></i>
                                     <span>Kembalikan</span>
                                 </button>
-                            ` : '<span class="text-xs text-slate-500">Selesai</span>'}
+                            ` : '<span class="text-xs text-slate-400">Selesai</span>'}
                         </td>
                     </tr>
                 `;
@@ -805,7 +851,6 @@
             lucide.createIcons();
         }
 
-        // Pinjam Langsung dari Tabel Utama (Tab 1)
         function pinjamLangsung(id, idAset, namaAlat) {
             document.getElementById('pinjamInventarisId').value = id;
             document.getElementById('pinjamBarangSearch').value = `[${idAset}] ${namaAlat}`;
@@ -813,7 +858,6 @@
             toggleModal('modalPinjam', true);
         }
 
-        // Open Modal Pinjam Kosong
         function openModalPinjam() {
             document.getElementById('pinjamInventarisId').value = '';
             document.getElementById('pinjamBarangSearch').value = '';
@@ -821,7 +865,6 @@
             toggleModal('modalPinjam', true);
         }
 
-        // Filter Barang Search Auto-Complete
         function filterBarangSearch() {
             const query = document.getElementById('pinjamBarangSearch').value.toLowerCase();
             const resultsDiv = document.getElementById('pinjamSearchResults');
@@ -847,9 +890,9 @@
                 resultsDiv.innerHTML = `<div class="p-3 text-xs text-slate-400 text-center">Barang tidak ditemukan atau sedang dipinjam</div>`;
             } else {
                 resultsDiv.innerHTML = availableItems.map(item => `
-                    <div onclick="selectBarangForPinjam('${item.id}', '${item.id_aset}', '${item.nama_alat}')" class="p-2.5 text-xs hover:bg-indigo-600/30 cursor-pointer transition">
-                        <span class="font-mono font-bold text-indigo-400">[${item.id_aset}]</span> 
-                        <span class="font-medium text-slate-100">${item.nama_alat}</span>
+                    <div onclick="selectBarangForPinjam('${item.id}', '${item.id_aset}', '${item.nama_alat}')" class="p-2.5 text-xs hover:bg-indigo-600/20 cursor-pointer transition">
+                        <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400">[${item.id_aset}]</span> 
+                        <span class="font-medium text-slate-800 dark:text-slate-100">${item.nama_alat}</span>
                         <span class="text-slate-400 text-[10px]">(${item.merek || '-'})</span>
                     </div>
                 `).join('');
@@ -858,14 +901,12 @@
             resultsDiv.classList.remove('hidden');
         }
 
-        // Select Barang dari Auto-Complete
         function selectBarangForPinjam(id, idAset, namaAlat) {
             document.getElementById('pinjamInventarisId').value = id;
             document.getElementById('pinjamBarangSearch').value = `[${idAset}] ${namaAlat}`;
             document.getElementById('pinjamSearchResults').classList.add('hidden');
         }
 
-        // Handle Form Peminjaman Baru
         async function handleCreatePeminjaman(e) {
             e.preventDefault();
             if (!supabaseClient) return;
@@ -897,7 +938,6 @@
             }
         }
 
-        // Handle Proses Pengembalian
         async function kembalikanBarang(peminjamanId) {
             if (!confirm('Apakah barang ini sudah dikembalikan ke studio?')) return;
 
@@ -918,9 +958,9 @@
         }
 
         function getKondisiBadgeStyle(kondisi) {
-            if (kondisi === 'Baik') return 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10';
-            if (kondisi === 'Rusak Ringan') return 'border-amber-500/40 text-amber-400 bg-amber-500/10';
-            return 'border-rose-500/40 text-rose-400 bg-rose-500/10';
+            if (kondisi === 'Baik') return 'border-emerald-500/40 text-emerald-600 dark:text-emerald-400 bg-emerald-500/10';
+            if (kondisi === 'Rusak Ringan') return 'border-amber-500/40 text-amber-600 dark:text-amber-400 bg-amber-500/10';
+            return 'border-rose-500/40 text-rose-600 dark:text-rose-400 bg-rose-500/10';
         }
 
         async function updateKondisi(id, newKondisi) {

@@ -254,6 +254,66 @@
         </div>
     </div>
 
+    <!-- MODAL EDIT ALAT (KHUSUS ADMIN) -->
+    <div id="modalEdit" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="edit-3" class="w-5 h-5 text-indigo-400"></i>
+                    <span>Edit Data Peralatan</span>
+                </h3>
+                <button onclick="toggleModal('modalEdit', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleUpdateItem(event)" class="space-y-3">
+                <!-- Hidden Field ID -->
+                <input type="hidden" id="editUuid">
+                
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">ID Aset</label>
+                        <input type="text" id="editIdAset" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Jumlah Unit</label>
+                        <input type="number" id="editJumlah" required min="0" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300">Nama Alat</label>
+                    <input type="text" id="editNamaAlat" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Merek / Tipe</label>
+                        <input type="text" id="editMerek" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Kategori</label>
+                        <input type="text" id="editKategori" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Kondisi</label>
+                        <select id="editKondisi" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                            <option value="Baik">Baik</option>
+                            <option value="Rusak Ringan">Rusak Ringan</option>
+                            <option value="Rusak Parah">Rusak Parah</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Spesifikasi</label>
+                        <input type="text" id="editSpesifikasi" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                </div>
+                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-700">
+                    <button type="button" onclick="toggleModal('modalEdit', false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Perbarui Data</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT LOGIC -->
     <script>
         // KREDENSIAL SUPABASE HARDCODED PERMANEN
@@ -477,9 +537,14 @@
                         </select>
                     </td>
                     <td class="py-3.5 px-4 text-right col-aksi" style="display: ${currentUserRole === 'admin' ? 'table-cell' : 'none'};">
-                        <button onclick="deleteItem('${item.id}')" title="Hapus Alat" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
+                        <div class="flex items-center justify-end space-x-1">
+                            <button onclick="openEditModal('${item.id}')" title="Edit Alat" class="p-1.5 text-slate-400 hover:text-indigo-400 hover:bg-indigo-500/10 rounded-lg transition">
+                                <i data-lucide="edit-2" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteItem('${item.id}')" title="Hapus Alat" class="p-1.5 text-slate-400 hover:text-rose-400 hover:bg-rose-500/10 rounded-lg transition">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
@@ -508,7 +573,6 @@
                 fetchInventory();
             } else {
                 showToast('Kondisi alat berhasil diperbarui!');
-                // Update local array for fast UI feedback
                 const localItem = inventoryData.find(i => i.id === id);
                 if (localItem) localItem.kondisi = newKondisi;
                 updateStatistics();
@@ -541,6 +605,56 @@
                 showToast('Alat berhasil ditambahkan!');
                 toggleModal('modalTambah', false);
                 e.target.reset();
+                fetchInventory();
+            }
+        }
+
+        // Open Edit Modal & Populate Data
+        function openEditModal(id) {
+            const item = inventoryData.find(i => i.id === id);
+            if (!item) return;
+
+            document.getElementById('editUuid').value = item.id;
+            document.getElementById('editIdAset').value = item.id_aset || '';
+            document.getElementById('editNamaAlat').value = item.nama_alat || '';
+            document.getElementById('editMerek').value = item.merek || '';
+            document.getElementById('editKategori').value = item.kategori || '';
+            document.getElementById('editJumlah').value = item.jumlah || 1;
+            document.getElementById('editKondisi').value = item.kondisi || 'Baik';
+            document.getElementById('editSpesifikasi').value = item.spesifikasi || '';
+
+            toggleModal('modalEdit', true);
+        }
+
+        // Update Item (Admin Only)
+        async function handleUpdateItem(e) {
+            e.preventDefault();
+            if (currentUserRole !== 'admin') {
+                showToast('Hanya Admin yang dapat mengubah data barang!', 'error');
+                return;
+            }
+
+            const uuid = document.getElementById('editUuid').value;
+            const updatedData = {
+                id_aset: document.getElementById('editIdAset').value.trim(),
+                nama_alat: document.getElementById('editNamaAlat').value.trim(),
+                merek: document.getElementById('editMerek').value.trim(),
+                kategori: document.getElementById('editKategori').value.trim(),
+                jumlah: parseInt(document.getElementById('editJumlah').value) || 0,
+                kondisi: document.getElementById('editKondisi').value,
+                spesifikasi: document.getElementById('editSpesifikasi').value.trim() || null
+            };
+
+            const { error } = await supabaseClient
+                .from('inventaris')
+                .update(updatedData)
+                .eq('id', uuid);
+
+            if (error) {
+                showToast('Gagal memperbarui data: ' + error.message, 'error');
+            } else {
+                showToast('Data alat berhasil diperbarui!');
+                toggleModal('modalEdit', false);
                 fetchInventory();
             }
         }

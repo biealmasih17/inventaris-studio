@@ -1,3 +1,15 @@
+Untuk menambahkan tombol/ikon **Filter Dropdown** atau **Pengurutan (Sorting)** langsung di *header* tabel (seperti pada kolom **ID Aset**, **Nama Alat & Merek**, **Kategori**, **Jumlah**, dll.), kita bisa memperbarui bagian header tabel dan menambahkan fungsi sorting/filter interaktif di JavaScript.
+
+---
+
+### Perubahan Kode `index.html`
+
+Berikut adalah kode lengkap `index.html` terbaru yang sudah dilengkapi dengan:
+
+1. **Filter / Sorting Interaktif di Header Tabel:** Klik header kolom (misalnya *Nama Alat*, *Kategori*, *Jumlah*, atau *Checklist Kondisi*) untuk mengurutkan data A-Z, Z-A, atau berdasarkan angka/kondisi.
+2. **Ikon Indikator Sorting (`↑` / `↓`):** Menampilkan arah pengurutan data saat header diklik.
+
+```html
 <!DOCTYPE html>
 <html lang="id">
 <head>
@@ -110,7 +122,7 @@
             </div>
         </div>
 
-        <!-- TOOLBAR & FILTER -->
+        <!-- TOOLBAR & FILTER ATAS -->
         <div class="bg-slate-800/40 border border-slate-700/60 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between">
             <!-- Search input -->
             <div class="relative w-full md:w-96">
@@ -139,18 +151,43 @@
             </div>
         </div>
 
-        <!-- TABEL DATA ALAT -->
+        <!-- TABEL DATA ALAT (DENGAN HEADER FILTER / SORTING) -->
         <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
             <div class="overflow-x-auto">
                 <table class="w-full text-left text-sm text-slate-300">
-                    <thead class="bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700/60">
+                    <thead class="bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700/60 select-none">
                         <tr>
-                            <th class="py-3.5 px-4">ID Aset</th>
-                            <th class="py-3.5 px-4">Nama Alat & Merek</th>
-                            <th class="py-3.5 px-4">Kategori</th>
-                            <th class="py-3.5 px-4 text-center">Jumlah</th>
+                            <th onclick="sortTable('id_aset')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">
+                                <div class="flex items-center space-x-1">
+                                    <span>ID Aset</span>
+                                    <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 opacity-60"></i>
+                                </div>
+                            </th>
+                            <th onclick="sortTable('nama_alat')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">
+                                <div class="flex items-center space-x-1">
+                                    <span>Nama Alat & Merek</span>
+                                    <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 opacity-60"></i>
+                                </div>
+                            </th>
+                            <th onclick="sortTable('kategori')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">
+                                <div class="flex items-center space-x-1">
+                                    <span>Kategori</span>
+                                    <i data-lucide="filter" class="w-3.5 h-3.5 opacity-60"></i>
+                                </div>
+                            </th>
+                            <th onclick="sortTable('jumlah')" class="py-3.5 px-4 text-center cursor-pointer hover:text-indigo-400 transition">
+                                <div class="flex items-center justify-center space-x-1">
+                                    <span>Jumlah</span>
+                                    <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 opacity-60"></i>
+                                </div>
+                            </th>
                             <th class="py-3.5 px-4">Spesifikasi</th>
-                            <th class="py-3.5 px-4 min-w-[160px]">Checklist Kondisi</th>
+                            <th onclick="sortTable('kondisi')" class="py-3.5 px-4 min-w-[160px] cursor-pointer hover:text-indigo-400 transition">
+                                <div class="flex items-center space-x-1">
+                                    <span>Checklist Kondisi</span>
+                                    <i data-lucide="filter" class="w-3.5 h-3.5 opacity-60"></i>
+                                </div>
+                            </th>
                             <th class="py-3.5 px-4 text-right col-aksi">Aksi</th>
                         </tr>
                     </thead>
@@ -265,7 +302,6 @@
                 <button onclick="toggleModal('modalEdit', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
             <form onsubmit="handleUpdateItem(event)" class="space-y-3">
-                <!-- Hidden Field ID -->
                 <input type="hidden" id="editUuid">
                 
                 <div class="grid grid-cols-2 gap-3">
@@ -323,6 +359,10 @@
         let supabaseClient = null;
         let inventoryData = [];
         let currentUserRole = 'guest'; // 'guest', 'staff', 'admin'
+        
+        // State Sorting Header
+        let currentSortColumn = 'id_aset';
+        let isSortAsc = true;
 
         // Initialize icons & app on load
         window.addEventListener('DOMContentLoaded', () => {
@@ -349,7 +389,6 @@
             const { data: { session } } = await supabaseClient.auth.getSession();
             
             if (session?.user) {
-                // Fetch profile role
                 const { data: profile } = await supabaseClient
                     .from('profiles')
                     .select('role')
@@ -358,7 +397,6 @@
 
                 currentUserRole = profile?.role || 'staff';
                 
-                // Update UI User Profile
                 document.getElementById('userEmailTxt').innerText = session.user.email;
                 document.getElementById('userRoleBadge').innerText = currentUserRole;
                 document.getElementById('userRoleBadge').className = `text-[10px] font-bold uppercase tracking-wider ${currentUserRole === 'admin' ? 'text-rose-400' : 'text-indigo-400'}`;
@@ -378,7 +416,6 @@
                 document.getElementById('btnTambahAlat').classList.add('hidden');
             }
 
-            // Toggle table action column visibility
             const colAksis = document.querySelectorAll('.col-aksi');
             colAksis.forEach(el => el.style.display = (currentUserRole === 'admin') ? 'table-cell' : 'none');
         }
@@ -483,13 +520,24 @@
             select.value = currentVal;
         }
 
-        // Apply Search & Filters
+        // Sort Table via Header Click
+        function sortTable(columnKey) {
+            if (currentSortColumn === columnKey) {
+                isSortAsc = !isSortAsc; // Reverse direction
+            } else {
+                currentSortColumn = columnKey;
+                isSortAsc = true;
+            }
+            applyFilters();
+        }
+
+        // Apply Search, Category, Condition Filters & Sorting
         function applyFilters() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const cat = document.getElementById('filterKategori').value;
             const kon = document.getElementById('filterKondisi').value;
 
-            const filtered = inventoryData.filter(item => {
+            let filtered = inventoryData.filter(item => {
                 const matchesSearch = (item.nama_alat || '').toLowerCase().includes(search) ||
                                       (item.merek || '').toLowerCase().includes(search) ||
                                       (item.id_aset || '').toLowerCase().includes(search) ||
@@ -497,6 +545,19 @@
                 const matchesCat = !cat || item.kategori === cat;
                 const matchesKon = !kon || item.kondisi === kon;
                 return matchesSearch && matchesCat && matchesKon;
+            });
+
+            // Sorting Logic
+            filtered.sort((a, b) => {
+                let valA = a[currentSortColumn] || '';
+                let valB = b[currentSortColumn] || '';
+
+                if (typeof valA === 'string') valA = valA.toLowerCase();
+                if (typeof valB === 'string') valB = valB.toLowerCase();
+
+                if (valA < valB) return isSortAsc ? -1 : 1;
+                if (valA > valB) return isSortAsc ? 1 : -1;
+                return 0;
             });
 
             renderTable(filtered);
@@ -699,3 +760,5 @@
     </script>
 </body>
 </html>
+
+```

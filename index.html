@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventaris Studio & Lab</title>
+    <title>Inventaris & Peminjaman Studio</title>
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
@@ -28,19 +28,17 @@
                 </div>
                 <div>
                     <h1 class="font-bold text-lg text-white leading-tight">Inventaris Studio & Lab</h1>
-                    <p class="text-xs text-slate-400">Sistem Manajemen Aset Real-Time</p>
+                    <p class="text-xs text-slate-400">Sistem Manajemen Aset & Peminjaman Real-Time</p>
                 </div>
             </div>
 
             <!-- Profile / Auth State Area -->
             <div class="flex items-center space-x-3">
-                <!-- Status Badge Connection -->
                 <div id="connectionBadge" class="hidden sm:flex items-center space-x-2 px-3 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
                     <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
                     <span>Terhubung</span>
                 </div>
 
-                <!-- User Profile & Logout -->
                 <div id="userProfileArea" class="hidden flex items-center space-x-3 bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5">
                     <div class="text-right">
                         <div id="userEmailTxt" class="text-xs font-semibold text-slate-200">user@example.com</div>
@@ -51,7 +49,6 @@
                     </button>
                 </div>
 
-                <!-- Login Button (If Logged Out) -->
                 <button id="btnLoginModal" onclick="toggleModal('modalLogin', true)" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2 shadow-lg shadow-indigo-600/30">
                     <i data-lucide="log-in" class="w-4 h-4"></i>
                     <span>Masuk</span>
@@ -61,134 +58,196 @@
     </header>
 
     <!-- MAIN CONTENT -->
-    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-6">
 
-        <!-- DASHBOARD STATISTIK -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Jenis Perangkat</p>
-                    <h3 id="statTotalJenis" class="text-2xl font-bold text-white mt-1">0</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Item dalam inventaris</p>
+        <!-- NAVIGASI TAB -->
+        <div class="flex border-b border-slate-800 space-x-4">
+            <button id="tabBtnInventaris" onclick="switchTab('inventaris')" class="pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center space-x-2 transition">
+                <i data-lucide="list" class="w-4 h-4"></i>
+                <span>Data Inventaris Aset</span>
+            </button>
+            <button id="tabBtnPeminjaman" onclick="switchTab('peminjaman')" class="pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition">
+                <i data-lucide="arrow-left-right" class="w-4 h-4"></i>
+                <span>Peminjaman & Pengembalian</span>
+            </button>
+        </div>
+
+        <!-- TAB 1: INVENTARIS ASET -->
+        <div id="tabContentInventaris" class="space-y-6">
+            <!-- DASHBOARD STATISTIK INVENTARIS -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Jenis Perangkat</p>
+                        <h3 id="statTotalJenis" class="text-2xl font-bold text-white mt-1">0</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Item dalam inventaris</p>
+                    </div>
+                    <div class="bg-indigo-500/10 p-3 rounded-lg border border-indigo-500/20 text-indigo-400">
+                        <i data-lucide="layers" class="w-6 h-6"></i>
+                    </div>
                 </div>
-                <div class="bg-indigo-500/10 p-3 rounded-lg border border-indigo-500/20 text-indigo-400">
-                    <i data-lucide="layers" class="w-6 h-6"></i>
+
+                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Unit Fisik</p>
+                        <h3 id="statTotalUnit" class="text-2xl font-bold text-white mt-1">0</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Akumulasi seluruh unit</p>
+                    </div>
+                    <div class="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20 text-blue-400">
+                        <i data-lucide="package" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Kondisi Baik</p>
+                        <h3 id="statKondisiBaik" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
+                        <p id="statPersenBaik" class="text-xs text-emerald-500 mt-0.5">0% Siap Dipakai</p>
+                    </div>
+                    <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-emerald-400">
+                        <i data-lucide="check-circle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Perlu Perbaikan</p>
+                        <h3 id="statPerluPerbaikan" class="text-2xl font-bold text-rose-400 mt-1">0</h3>
+                        <p class="text-xs text-rose-500 mt-0.5">Rusak Ringan & Parah</p>
+                    </div>
+                    <div class="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 text-rose-400">
+                        <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                    </div>
                 </div>
             </div>
 
-            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Unit Fisik</p>
-                    <h3 id="statTotalUnit" class="text-2xl font-bold text-white mt-1">0</h3>
-                    <p class="text-xs text-slate-500 mt-0.5">Akumulasi seluruh unit</p>
+            <!-- TOOLBAR & FILTER -->
+            <div class="bg-slate-800/40 border border-slate-700/60 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between">
+                <div class="relative w-full md:w-96">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari Nama Alat, Merek, ID Aset..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
                 </div>
-                <div class="bg-blue-500/10 p-3 rounded-lg border border-blue-500/20 text-blue-400">
-                    <i data-lucide="package" class="w-6 h-6"></i>
+
+                <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+                    <select id="filterKategori" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                        <option value="">Semua Kategori</option>
+                    </select>
+
+                    <select id="filterKondisi" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                        <option value="">Semua Kondisi</option>
+                        <option value="Baik">Baik</option>
+                        <option value="Rusak Ringan">Rusak Ringan</option>
+                        <option value="Rusak Parah">Rusak Parah</option>
+                    </select>
+
+                    <button id="btnTambahAlat" onclick="toggleModal('modalTambah', true)" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2 shadow-lg shadow-indigo-600/20">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        <span>Tambah Alat</span>
+                    </button>
                 </div>
             </div>
 
-            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Kondisi Baik</p>
-                    <h3 id="statKondisiBaik" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
-                    <p id="statPersenBaik" class="text-xs text-emerald-500 mt-0.5">0% Siap Dipakai</p>
+            <!-- TABEL DATA ALAT -->
+            <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700/60 select-none">
+                            <tr>
+                                <th onclick="sortTable('id_aset')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">ID Aset</th>
+                                <th onclick="sortTable('nama_alat')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">Nama Alat & Merek</th>
+                                <th onclick="sortTable('kategori')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">Kategori</th>
+                                <th class="py-3.5 px-4">Spesifikasi</th>
+                                <th onclick="sortTable('kondisi')" class="py-3.5 px-4 min-w-[160px] cursor-pointer hover:text-indigo-400 transition">Checklist Kondisi</th>
+                                <th class="py-3.5 px-4 text-right col-aksi">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventoryTableBody" class="divide-y divide-slate-700/40"></tbody>
+                    </table>
                 </div>
-                <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-emerald-400">
-                    <i data-lucide="check-circle" class="w-6 h-6"></i>
-                </div>
-            </div>
-
-            <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
-                <div>
-                    <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Perlu Perbaikan</p>
-                    <h3 id="statPerluPerbaikan" class="text-2xl font-bold text-rose-400 mt-1">0</h3>
-                    <p class="text-xs text-rose-500 mt-0.5">Rusak Ringan & Parah</p>
-                </div>
-                <div class="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 text-rose-400">
-                    <i data-lucide="alert-triangle" class="w-6 h-6"></i>
+                <div id="tableEmptyState" class="p-12 text-center text-slate-400">
+                    <i data-lucide="loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-indigo-500"></i>
+                    <p>Memuat data inventaris...</p>
                 </div>
             </div>
         </div>
 
-        <!-- TOOLBAR & FILTER ATAS -->
-        <div class="bg-slate-800/40 border border-slate-700/60 p-4 rounded-xl flex flex-col md:flex-row gap-4 items-center justify-between">
-            <!-- Search input -->
-            <div class="relative w-full md:w-96">
-                <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-                <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari Nama Alat, Merek, ID Aset..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-100 placeholder-slate-500 focus:outline-none focus:border-indigo-500">
+        <!-- TAB 2: PEMINJAMAN & PENGEMBALIAN -->
+        <div id="tabContentPeminjaman" class="space-y-6 hidden">
+            <!-- DASHBOARD STATISTIK PEMINJAMAN -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Sedang Dipinjam</p>
+                        <h3 id="statDipinjam" class="text-2xl font-bold text-amber-400 mt-1">0</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Barang di luar studio</p>
+                    </div>
+                    <div class="bg-amber-500/10 p-3 rounded-lg border border-amber-500/20 text-amber-400">
+                        <i data-lucide="clock" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Peminjaman Terlambat</p>
+                        <h3 id="statTerlambat" class="text-2xl font-bold text-rose-400 mt-1">0</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Lewat estimasi kembali</p>
+                    </div>
+                    <div class="bg-rose-500/10 p-3 rounded-lg border border-rose-500/20 text-rose-400">
+                        <i data-lucide="alert-circle" class="w-6 h-6"></i>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/60 border border-slate-700/60 p-5 rounded-xl flex items-center justify-between">
+                    <div>
+                        <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Peminjaman Selesai</p>
+                        <h3 id="statSelesai" class="text-2xl font-bold text-emerald-400 mt-1">0</h3>
+                        <p class="text-xs text-slate-500 mt-0.5">Riwayat kembali</p>
+                    </div>
+                    <div class="bg-emerald-500/10 p-3 rounded-lg border border-emerald-500/20 text-emerald-400">
+                        <i data-lucide="check-check" class="w-6 h-6"></i>
+                    </div>
+                </div>
             </div>
 
-            <!-- Controls (Filter & Action Button) -->
-            <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
-                <select id="filterKategori" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
-                    <option value="">Semua Kategori</option>
-                </select>
+            <!-- TOOLBAR PEMINJAMAN -->
+            <div class="bg-slate-800/40 border border-slate-700/60 p-4 rounded-xl flex flex-col sm:flex-row gap-4 items-center justify-between">
+                <div class="relative w-full sm:w-80">
+                    <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+                    <input type="text" id="searchPinjamInput" oninput="renderPeminjamanTable()" placeholder="Cari Nama Peminjam, Barang..." class="w-full bg-slate-900 border border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                </div>
 
-                <select id="filterKondisi" onchange="applyFilters()" class="bg-slate-900 border border-slate-700 text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
-                    <option value="">Semua Kondisi</option>
-                    <option value="Baik">Baik</option>
-                    <option value="Rusak Ringan">Rusak Ringan</option>
-                    <option value="Rusak Parah">Rusak Parah</option>
-                </select>
-
-                <!-- Tombol Tambah Alat (Khusus Admin) -->
-                <button id="btnTambahAlat" onclick="toggleModal('modalTambah', true)" class="hidden bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-2 shadow-lg shadow-indigo-600/20">
-                    <i data-lucide="plus" class="w-4 h-4"></i>
-                    <span>Tambah Alat</span>
+                <button onclick="openModalPinjam()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
+                    <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                    <span>Pinjam Barang Baru</span>
                 </button>
             </div>
-        </div>
 
-        <!-- TABEL DATA ALAT -->
-        <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
-            <div class="overflow-x-auto">
-                <table class="w-full text-left text-sm text-slate-300">
-                    <thead class="bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700/60 select-none">
-                        <tr>
-                            <th onclick="sortTable('id_aset')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">
-                                <div class="flex items-center space-x-1">
-                                    <span>ID Aset</span>
-                                    <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 opacity-60"></i>
-                                </div>
-                            </th>
-                            <th onclick="sortTable('nama_alat')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">
-                                <div class="flex items-center space-x-1">
-                                    <span>Nama Alat & Merek</span>
-                                    <i data-lucide="arrow-up-down" class="w-3.5 h-3.5 opacity-60"></i>
-                                </div>
-                            </th>
-                            <th onclick="sortTable('kategori')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-400 transition">
-                                <div class="flex items-center space-x-1">
-                                    <span>Kategori</span>
-                                    <i data-lucide="filter" class="w-3.5 h-3.5 opacity-60"></i>
-                                </div>
-                            </th>
-                            <th class="py-3.5 px-4">Spesifikasi</th>
-                            <th onclick="sortTable('kondisi')" class="py-3.5 px-4 min-w-[160px] cursor-pointer hover:text-indigo-400 transition">
-                                <div class="flex items-center space-x-1">
-                                    <span>Checklist Kondisi</span>
-                                    <i data-lucide="filter" class="w-3.5 h-3.5 opacity-60"></i>
-                                </div>
-                            </th>
-                            <th class="py-3.5 px-4 text-right col-aksi">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody id="inventoryTableBody" class="divide-y divide-slate-700/40">
-                        <!-- Data dimasukkan via JS -->
-                    </tbody>
-                </table>
-            </div>
-            
-            <!-- Empty / Loading State -->
-            <div id="tableEmptyState" class="p-12 text-center text-slate-400">
-                <i data-lucide="loader-2" class="w-8 h-8 mx-auto mb-2 animate-spin text-indigo-500"></i>
-                <p>Memuat data inventaris...</p>
+            <!-- TABEL RIWAYAT PEMINJAMAN -->
+            <div class="bg-slate-800/40 border border-slate-700/60 rounded-xl overflow-hidden shadow-xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm text-slate-300">
+                        <thead class="bg-slate-900/80 text-xs font-semibold uppercase tracking-wider text-slate-400 border-b border-slate-700/60">
+                            <tr>
+                                <th class="py-3.5 px-4">Peminjam & Kontak</th>
+                                <th class="py-3.5 px-4">Barang Dipinjam</th>
+                                <th class="py-3.5 px-4">Tgl Pinjam</th>
+                                <th class="py-3.5 px-4">Estimasi Kembali</th>
+                                <th class="py-3.5 px-4">Status</th>
+                                <th class="py-3.5 px-4 text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="peminjamanTableBody" class="divide-y divide-slate-700/40"></tbody>
+                    </table>
+                </div>
+                <div id="pinjamEmptyState" class="p-12 text-center text-slate-400">
+                    <p>Belum ada transaksi peminjaman.</p>
+                </div>
             </div>
         </div>
 
     </main>
 
-    <!-- MODAL LOGIN / MASUK -->
+    <!-- MODAL LOGIN -->
     <div id="modalLogin" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-sm w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-700 pb-3">
@@ -201,22 +260,20 @@
             <form onsubmit="handleLogin(event)" class="space-y-3">
                 <div>
                     <label class="text-xs font-medium text-slate-300">Email Akun</label>
-                    <input type="email" id="loginEmail" required placeholder="admin@studio.com" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <input type="email" id="loginEmail" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
                 </div>
                 <div>
                     <label class="text-xs font-medium text-slate-300">Password</label>
-                    <input type="password" id="loginPassword" required placeholder="••••••••" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    <input type="password" id="loginPassword" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
                 </div>
                 <div class="pt-2">
-                    <button type="submit" id="btnLoginSubmit" class="w-full py-2.5 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium shadow-lg shadow-indigo-600/30">
-                        Masuk Sekarang
-                    </button>
+                    <button type="submit" id="btnLoginSubmit" class="w-full py-2.5 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium shadow-lg shadow-indigo-600/30">Masuk Sekarang</button>
                 </div>
             </form>
         </div>
     </div>
 
-    <!-- MODAL TAMBAH ALAT (KHUSUS ADMIN) -->
+    <!-- MODAL TAMBAH ALAT (ADMIN) -->
     <div id="modalTambah" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-700 pb-3">
@@ -256,7 +313,7 @@
                     </div>
                     <div>
                         <label class="text-xs font-medium text-slate-300">Spesifikasi (Opsional)</label>
-                        <input type="text" id="addSpesifikasi" placeholder="Dual Channel, Type-C" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                        <input type="text" id="addSpesifikasi" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
                     </div>
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-slate-700">
@@ -267,7 +324,7 @@
         </div>
     </div>
 
-    <!-- MODAL EDIT ALAT (KHUSUS ADMIN) -->
+    <!-- MODAL EDIT ALAT (ADMIN) -->
     <div id="modalEdit" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-700 pb-3">
@@ -279,7 +336,6 @@
             </div>
             <form onsubmit="handleUpdateItem(event)" class="space-y-3">
                 <input type="hidden" id="editUuid">
-                
                 <div>
                     <label class="text-xs font-medium text-slate-300">ID Aset</label>
                     <input type="text" id="editIdAset" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
@@ -320,32 +376,73 @@
         </div>
     </div>
 
+    <!-- MODAL CATAT PEMINJAMAN BARU -->
+    <div id="modalPinjam" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-slate-800 border border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <h3 class="font-bold text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="arrow-left-right" class="w-5 h-5 text-indigo-400"></i>
+                    <span>Catat Peminjaman Barang</span>
+                </h3>
+                <button onclick="toggleModal('modalPinjam', false)" class="text-slate-400 hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            <form onsubmit="handleCreatePeminjaman(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs font-medium text-slate-300">Pilih Barang</label>
+                    <select id="pinjamInventarisId" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100 focus:outline-none focus:border-indigo-500">
+                        <option value="">-- Pilih Barang dari Inventaris --</option>
+                    </select>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">Nama Peminjam</label>
+                        <input type="text" id="pinjamNama" required placeholder="Budi Santoso" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-300">No. WhatsApp / Kontak</label>
+                        <input type="text" id="pinjamKontak" required placeholder="08123456789" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300">Kegiatan / Keperluan</label>
+                    <input type="text" id="pinjamKegiatan" placeholder="Syuting Video Klip di Luar Studio" class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-300">Estimasi Tgl Pengembalian</label>
+                    <input type="date" id="pinjamEstimasi" required class="mt-1 w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-sm text-slate-100">
+                </div>
+                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-700">
+                    <button type="button" onclick="toggleModal('modalPinjam', false)" class="px-4 py-2 text-sm text-slate-400 hover:text-white">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium">Proses Pinjam</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- JAVASCRIPT LOGIC -->
     <script>
-        // KREDENSIAL SUPABASE HARDCODED PERMANEN
         const SUPABASE_URL = "https://tvirrhcnnxjpfvggnigm.supabase.co";
         const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InR2aXJyaGNubnhqcGZ2Z2duaWdtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODcwMTY2NDksImV4cCI6MjEwMjU5MjY0OX0.t05sMtffRZKTUhS4EeNJzf-wxeqKHQAycXtCkw6gfIg";
 
         let supabaseClient = null;
         let inventoryData = [];
-        let currentUserRole = 'guest'; // 'guest', 'staff', 'admin'
+        let peminjamanData = [];
+        let currentUserRole = 'guest';
         
-        // State Sorting Header
         let currentSortColumn = 'id_aset';
         let isSortAsc = true;
 
-        // Initialize icons & app on load
         window.addEventListener('DOMContentLoaded', () => {
             lucide.createIcons();
             initSupabase();
         });
 
-        // Initialize Supabase Client
         function initSupabase() {
             try {
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 checkAuthState();
                 fetchInventory();
+                fetchPeminjaman();
                 subscribeRealtime();
             } catch (e) {
                 console.error(e);
@@ -353,7 +450,26 @@
             }
         }
 
-        // Auth State Handler
+        // Tab Navigation Switcher
+        function switchTab(tabName) {
+            const tabInv = document.getElementById('tabContentInventaris');
+            const tabPin = document.getElementById('tabContentPeminjaman');
+            const btnInv = document.getElementById('tabBtnInventaris');
+            const btnPin = document.getElementById('tabBtnPeminjaman');
+
+            if (tabName === 'inventaris') {
+                tabInv.classList.remove('hidden');
+                tabPin.classList.add('hidden');
+                btnInv.className = "pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center space-x-2 transition";
+                btnPin.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition";
+            } else {
+                tabInv.classList.add('hidden');
+                tabPin.classList.remove('hidden');
+                btnPin.className = "pb-3 text-sm font-semibold border-b-2 border-indigo-500 text-indigo-400 flex items-center space-x-2 transition";
+                btnInv.className = "pb-3 text-sm font-semibold border-b-2 border-transparent text-slate-400 hover:text-slate-200 flex items-center space-x-2 transition";
+            }
+        }
+
         async function checkAuthState() {
             if (!supabaseClient) return;
             const { data: { session } } = await supabaseClient.auth.getSession();
@@ -390,7 +506,6 @@
             colAksis.forEach(el => el.style.display = (currentUserRole === 'admin') ? 'table-cell' : 'none');
         }
 
-        // Handle Login
         async function handleLogin(e) {
             e.preventDefault();
             const email = document.getElementById('loginEmail').value;
@@ -412,10 +527,10 @@
                 toggleModal('modalLogin', false);
                 checkAuthState();
                 fetchInventory();
+                fetchPeminjaman();
             }
         }
 
-        // Handle Logout
         async function handleLogout() {
             if (confirm('Apakah Anda yakin ingin keluar?')) {
                 await supabaseClient.auth.signOut();
@@ -423,7 +538,6 @@
             }
         }
 
-        // Fetch Inventory Data
         async function fetchInventory() {
             if (!supabaseClient) return;
 
@@ -444,18 +558,34 @@
             updateStatistics();
         }
 
-        // Subscribe Realtime Changes
+        // Fetch Peminjaman Data
+        async function fetchPeminjaman() {
+            if (!supabaseClient) return;
+
+            const { data, error } = await supabaseClient
+                .from('peminjaman')
+                .select('*, inventaris(*)')
+                .order('tanggal_pinjam', { ascending: false });
+
+            if (error) {
+                console.error(error);
+                return;
+            }
+
+            peminjamanData = data || [];
+            renderPeminjamanTable();
+            updatePeminjamanStats();
+        }
+
         function subscribeRealtime() {
             if (!supabaseClient) return;
             supabaseClient
-                .channel('public:inventaris')
-                .on('postgres_changes', { event: '*', schema: 'public', table: 'inventaris' }, () => {
-                    fetchInventory();
-                })
+                .channel('public:realtime')
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'inventaris' }, () => fetchInventory())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'peminjaman' }, () => fetchPeminjaman())
                 .subscribe();
         }
 
-        // Update Statistics Cards
         function updateStatistics() {
             const totalJenis = inventoryData.length;
             const totalUnit = inventoryData.reduce((acc, curr) => acc + (Number(curr.jumlah) || 1), 0);
@@ -475,7 +605,17 @@
             document.getElementById('statPerluPerbaikan').innerText = totalRusakUnit;
         }
 
-        // Populate Category Filter
+        function updatePeminjamanStats() {
+            const today = new Date().toISOString().split('T')[0];
+            const dipinjam = peminjamanData.filter(p => p.status === 'Dipinjam' || p.status === 'Terlambat');
+            const terlambat = peminjamanData.filter(p => p.status === 'Dipinjam' && p.estimasi_kembali < today);
+            const selesai = peminjamanData.filter(p => p.status === 'Selesai');
+
+            document.getElementById('statDipinjam').innerText = dipinjam.length;
+            document.getElementById('statTerlambat').innerText = terlambat.length;
+            document.getElementById('statSelesai').innerText = selesai.length;
+        }
+
         function updateCategoryOptions() {
             const categories = [...new Set(inventoryData.map(i => i.kategori).filter(Boolean))];
             const select = document.getElementById('filterKategori');
@@ -490,7 +630,6 @@
             select.value = currentVal;
         }
 
-        // Sort Table via Header Click
         function sortTable(columnKey) {
             if (currentSortColumn === columnKey) {
                 isSortAsc = !isSortAsc;
@@ -501,7 +640,6 @@
             applyFilters();
         }
 
-        // Apply Search, Category, Condition Filters & Sorting
         function applyFilters() {
             const search = document.getElementById('searchInput').value.toLowerCase();
             const cat = document.getElementById('filterKategori').value;
@@ -517,7 +655,6 @@
                 return matchesSearch && matchesCat && matchesKon;
             });
 
-            // Sorting Logic
             filtered.sort((a, b) => {
                 let valA = a[currentSortColumn] || '';
                 let valB = b[currentSortColumn] || '';
@@ -533,7 +670,6 @@
             renderTable(filtered);
         }
 
-        // Render Inventory Table
         function renderTable(data) {
             const tbody = document.getElementById('inventoryTableBody');
             const emptyState = document.getElementById('tableEmptyState');
@@ -582,14 +718,139 @@
             lucide.createIcons();
         }
 
-        // Helper style for condition dropdown
+        // Render Tabel Peminjaman
+        function renderPeminjamanTable() {
+            const search = document.getElementById('searchPinjamInput').value.toLowerCase();
+            const tbody = document.getElementById('peminjamanTableBody');
+            const emptyState = document.getElementById('pinjamEmptyState');
+
+            const filtered = peminjamanData.filter(p => {
+                const nama = (p.nama_peminjam || '').toLowerCase();
+                const barang = (p.inventaris?.nama_alat || '').toLowerCase();
+                const idAset = (p.inventaris?.id_aset || '').toLowerCase();
+                return nama.includes(search) || barang.includes(search) || idAset.includes(search);
+            });
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '';
+                emptyState.classList.remove('hidden');
+                return;
+            }
+
+            emptyState.classList.add('hidden');
+            const today = new Date().toISOString().split('T')[0];
+
+            tbody.innerHTML = filtered.map(p => {
+                const isTerlambat = p.status === 'Dipinjam' && p.estimasi_kembali < today;
+                const statusTxt = p.status === 'Selesai' ? '🟢 Selesai' : (isTerlambat ? '🔴 Terlambat' : '🟡 Dipinjam');
+                const statusStyle = p.status === 'Selesai' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' : (isTerlambat ? 'bg-rose-500/10 text-rose-400 border-rose-500/30 animate-pulse' : 'bg-amber-500/10 text-amber-400 border-amber-500/30');
+
+                return `
+                    <tr class="hover:bg-slate-800/50 transition">
+                        <td class="py-3.5 px-4">
+                            <div class="font-medium text-slate-100">${p.nama_peminjam}</div>
+                            <div class="text-xs text-slate-400">${p.kontak_peminjam || '-'}</div>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <div class="font-medium text-indigo-400 font-mono text-xs">${p.inventaris?.id_aset || '-'}</div>
+                            <div class="text-xs text-slate-200">${p.inventaris?.nama_alat || 'Barang Dihapus'}</div>
+                        </td>
+                        <td class="py-3.5 px-4 text-xs text-slate-400">${new Date(p.tanggal_pinjam).toLocaleDateString('id-ID')}</td>
+                        <td class="py-3.5 px-4 text-xs font-semibold ${isTerlambat ? 'text-rose-400' : 'text-slate-300'}">${new Date(p.estimasi_kembali).toLocaleDateString('id-ID')}</td>
+                        <td class="py-3.5 px-4">
+                            <span class="inline-block px-2.5 py-1 rounded-md text-xs font-semibold border ${statusStyle}">
+                                ${statusTxt}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4 text-right">
+                            ${p.status !== 'Selesai' ? `
+                                <button onclick="kembalikanBarang('${p.id}')" class="px-3 py-1.5 text-xs bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg font-medium transition flex items-center space-x-1 ml-auto">
+                                    <i data-lucide="check" class="w-3.5 h-3.5"></i>
+                                    <span>Kembalikan</span>
+                                </button>
+                            ` : '<span class="text-xs text-slate-500">Selesai</span>'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            lucide.createIcons();
+        }
+
+        // Open Modal Peminjaman
+        function openModalPinjam() {
+            const select = document.getElementById('pinjamInventarisId');
+            select.innerHTML = '<option value="">-- Pilih Barang dari Inventaris --</option>';
+
+            // Filter barang yang belum sedang dipinjam
+            const activePinjamIds = peminjamanData
+                .filter(p => p.status === 'Dipinjam' || p.status === 'Terlambat')
+                .map(p => p.inventaris_id);
+
+            const availableItems = inventoryData.filter(i => !activePinjamIds.includes(i.id));
+
+            availableItems.forEach(item => {
+                const opt = document.createElement('option');
+                opt.value = item.id;
+                opt.innerText = `[${item.id_aset}] ${item.nama_alat} (${item.merek || 'Tanpa Merek'})`;
+                select.appendChild(opt);
+            });
+
+            toggleModal('modalPinjam', true);
+        }
+
+        // Handle Form Peminjaman Baru
+        async function handleCreatePeminjaman(e) {
+            e.preventDefault();
+            if (!supabaseClient) return;
+
+            const pinjamData = {
+                inventaris_id: document.getElementById('pinjamInventarisId').value,
+                nama_peminjam: document.getElementById('pinjamNama').value.trim(),
+                kontak_peminjam: document.getElementById('pinjamKontak').value.trim(),
+                kegiatan: document.getElementById('pinjamKegiatan').value.trim() || null,
+                estimasi_kembali: document.getElementById('pinjamEstimasi').value,
+                status: 'Dipinjam'
+            };
+
+            const { error } = await supabaseClient.from('peminjaman').insert([pinjamData]);
+
+            if (error) {
+                showToast('Gagal mencatat peminjaman: ' + error.message, 'error');
+            } else {
+                showToast('Peminjaman berhasil dicatat!');
+                toggleModal('modalPinjam', false);
+                e.target.reset();
+                fetchPeminjaman();
+            }
+        }
+
+        // Handle Proses Pengembalian Barang
+        async function kembalikanBarang(peminjamanId) {
+            if (!confirm('Apakah barang ini sudah benar-benar dikembalikan dalam kondisi baik?')) return;
+
+            const { error } = await supabaseClient
+                .from('peminjaman')
+                .update({ 
+                    status: 'Selesai',
+                    tanggal_kembali: new Date().toISOString()
+                })
+                .eq('id', peminjamanId);
+
+            if (error) {
+                showToast('Gagal memproses pengembalian: ' + error.message, 'error');
+            } else {
+                showToast('Barang berhasil dikembalikan ke inventaris!');
+                fetchPeminjaman();
+            }
+        }
+
         function getKondisiBadgeStyle(kondisi) {
             if (kondisi === 'Baik') return 'border-emerald-500/40 text-emerald-400 bg-emerald-500/10';
             if (kondisi === 'Rusak Ringan') return 'border-amber-500/40 text-amber-400 bg-amber-500/10';
             return 'border-rose-500/40 text-rose-400 bg-rose-500/10';
         }
 
-        // Realtime Dropdown Update
         async function updateKondisi(id, newKondisi) {
             if (!supabaseClient) return;
 
@@ -609,7 +870,6 @@
             }
         }
 
-        // Insert Item (Admin Only)
         async function handleInsertItem(e) {
             e.preventDefault();
             if (currentUserRole !== 'admin') {
@@ -639,7 +899,6 @@
             }
         }
 
-        // Open Edit Modal & Populate Data
         function openEditModal(id) {
             const item = inventoryData.find(i => i.id === id);
             if (!item) return;
@@ -655,7 +914,6 @@
             toggleModal('modalEdit', true);
         }
 
-        // Update Item (Admin Only)
         async function handleUpdateItem(e) {
             e.preventDefault();
             if (currentUserRole !== 'admin') {
@@ -688,7 +946,6 @@
             }
         }
 
-        // Delete Item (Admin Only)
         async function deleteItem(id) {
             if (currentUserRole !== 'admin') {
                 showToast('Hanya Admin yang dapat menghapus barang!', 'error');
@@ -706,14 +963,12 @@
             }
         }
 
-        // Modal Utility
         function toggleModal(id, show) {
             const modal = document.getElementById(id);
             if (show) modal.classList.remove('hidden');
             else modal.classList.add('hidden');
         }
 
-        // Custom Toast Notification
         function showToast(msg, type = 'success') {
             const toast = document.createElement('div');
             toast.className = `fixed bottom-5 right-5 z-50 px-4 py-3 rounded-xl font-medium text-sm shadow-2xl transition transform duration-300 flex items-center space-x-2 ${type === 'error' ? 'bg-rose-600 text-white' : 'bg-emerald-600 text-white'}`;

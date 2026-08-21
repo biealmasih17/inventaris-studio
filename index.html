@@ -43,7 +43,6 @@
 
             <!-- Profile & Actions Area -->
             <div class="flex items-center space-x-3">
-                <!-- TOGGLE THEME BUTTON (LIGHT / DARK) -->
                 <button onclick="toggleTheme()" id="btnThemeToggle" title="Ubah Tema" class="p-2 text-slate-600 dark:text-slate-300 bg-slate-200 dark:bg-slate-800 hover:bg-slate-300 dark:hover:bg-slate-700 border border-slate-300 dark:border-slate-700 rounded-lg transition flex items-center justify-center">
                     <i id="themeIcon" data-lucide="sun" class="w-5 h-5 text-amber-500"></i>
                 </button>
@@ -137,12 +136,17 @@
 
             <!-- TOOLBAR & FILTER -->
             <div class="bg-white dark:bg-slate-800/40 border border-slate-200 dark:border-slate-700/60 p-4 rounded-xl shadow-sm flex flex-col md:flex-row gap-4 items-center justify-between">
-                <div class="relative w-full md:w-96">
+                <div class="relative w-full md:w-80">
                     <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
                     <input type="text" id="searchInput" oninput="applyFilters()" placeholder="Cari Nama Alat, Merek, ID Aset..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-800 dark:text-slate-100 placeholder-slate-400 focus:outline-none focus:border-indigo-500">
                 </div>
 
                 <div class="flex flex-wrap items-center gap-3 w-full md:w-auto justify-end">
+                    <!-- FILTER RUANGAN -->
+                    <select id="filterRuangan" onchange="applyFilters()" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
+                        <option value="">Semua Ruangan</option>
+                    </select>
+
                     <select id="filterKategori" onchange="applyFilters()" class="bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-slate-700 dark:text-slate-200 text-sm rounded-lg px-3 py-2 focus:outline-none focus:border-indigo-500">
                         <option value="">Semua Kategori</option>
                     </select>
@@ -170,6 +174,7 @@
                                 <th onclick="sortTable('id_aset')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">ID Aset</th>
                                 <th onclick="sortTable('nama_alat')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">Nama Alat & Merek</th>
                                 <th onclick="sortTable('kategori')" class="py-3.5 px-4 cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">Kategori</th>
+                                <th class="py-3.5 px-4">Ruangan</th>
                                 <th class="py-3.5 px-4">Spesifikasi</th>
                                 <th onclick="sortTable('kondisi')" class="py-3.5 px-4 min-w-[160px] cursor-pointer hover:text-indigo-600 dark:hover:text-indigo-400 transition">Checklist Kondisi</th>
                                 <th class="py-3.5 px-4 text-right">Opsi Pinjam / Aksi</th>
@@ -318,6 +323,12 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Ruangan</label>
+                        <select id="addRuangan" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
+                            <option value="">-- Pilih Ruangan --</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Kondisi Awal</label>
                         <select id="addKondisi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                             <option value="Baik">Baik</option>
@@ -325,10 +336,10 @@
                             <option value="Rusak Parah">Rusak Parah</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Spesifikasi (Opsional)</label>
-                        <input type="text" id="addSpesifikasi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
-                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Spesifikasi (Opsional)</label>
+                    <input type="text" id="addSpesifikasi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-700">
                     <button type="button" onclick="toggleModal('modalTambah', false)" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Batal</button>
@@ -370,6 +381,12 @@
                 </div>
                 <div class="grid grid-cols-2 gap-3">
                     <div>
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Ruangan</label>
+                        <select id="editRuangan" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
+                            <option value="">-- Pilih Ruangan --</option>
+                        </select>
+                    </div>
+                    <div>
                         <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Kondisi</label>
                         <select id="editKondisi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                             <option value="Baik">Baik</option>
@@ -377,10 +394,10 @@
                             <option value="Rusak Parah">Rusak Parah</option>
                         </select>
                     </div>
-                    <div>
-                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Spesifikasi</label>
-                        <input type="text" id="editSpesifikasi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
-                    </div>
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Spesifikasi</label>
+                    <input type="text" id="editSpesifikasi" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
                 </div>
                 <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-700">
                     <button type="button" onclick="toggleModal('modalEdit', false)" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Batal</button>
@@ -444,6 +461,7 @@
         let supabaseClient = null;
         let inventoryData = [];
         let peminjamanData = [];
+        let ruanganData = [];
         let currentUserRole = 'guest';
         
         let currentSortColumn = 'id_aset';
@@ -455,7 +473,6 @@
             initSupabase();
         });
 
-        // Theme Toggle Logic
         function initTheme() {
             const savedTheme = localStorage.getItem('theme') || 'dark';
             applyTheme(savedTheme);
@@ -495,6 +512,7 @@
             try {
                 supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
                 checkAuthState();
+                fetchRuangan();
                 fetchInventory();
                 fetchPeminjaman();
                 subscribeRealtime();
@@ -502,6 +520,36 @@
                 console.error(e);
                 showToast('Gagal terhubung ke Supabase!', 'error');
             }
+        }
+
+        // Fetch Ruangan
+        async function fetchRuangan() {
+            if (!supabaseClient) return;
+            const { data, error } = await supabaseClient
+                .from('ruangan')
+                .select('*')
+                .order('nama_ruangan', { ascending: true });
+
+            if (!error && data) {
+                ruanganData = data;
+                populateRuanganSelects();
+            }
+        }
+
+        function populateRuanganSelects() {
+            const filterSelect = document.getElementById('filterRuangan');
+            const addSelect = document.getElementById('addRuangan');
+            const editSelect = document.getElementById('editRuangan');
+
+            filterSelect.innerHTML = '<option value="">Semua Ruangan</option>';
+            addSelect.innerHTML = '<option value="">-- Pilih Ruangan --</option>';
+            editSelect.innerHTML = '<option value="">-- Pilih Ruangan --</option>';
+
+            ruanganData.forEach(r => {
+                filterSelect.innerHTML += `<option value="${r.id}">${r.nama_ruangan}</option>`;
+                addSelect.innerHTML += `<option value="${r.id}">${r.nama_ruangan}</option>`;
+                editSelect.innerHTML += `<option value="${r.id}">${r.nama_ruangan}</option>`;
+            });
         }
 
         function switchTab(tabName) {
@@ -591,12 +639,13 @@
             }
         }
 
+        // Fetch Inventory dengan Join Tabel Ruangan
         async function fetchInventory() {
             if (!supabaseClient) return;
 
             const { data, error } = await supabaseClient
                 .from('inventaris')
-                .select('*')
+                .select('*, ruangan(*)')
                 .order('id_aset', { ascending: true });
 
             if (error) {
@@ -616,7 +665,7 @@
 
             const { data, error } = await supabaseClient
                 .from('peminjaman')
-                .select('*, inventaris(*)')
+                .select('*, inventaris(*, ruangan(*))')
                 .order('tanggal_pinjam', { ascending: false });
 
             if (error) {
@@ -636,6 +685,7 @@
                 .channel('public:realtime')
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'inventaris' }, () => fetchInventory())
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'peminjaman' }, () => fetchPeminjaman())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'ruangan' }, () => fetchRuangan())
                 .subscribe();
         }
 
@@ -697,6 +747,7 @@
             const search = document.getElementById('searchInput').value.toLowerCase();
             const cat = document.getElementById('filterKategori').value;
             const kon = document.getElementById('filterKondisi').value;
+            const rua = document.getElementById('filterRuangan').value;
 
             let filtered = inventoryData.filter(item => {
                 const matchesSearch = (item.nama_alat || '').toLowerCase().includes(search) ||
@@ -705,7 +756,8 @@
                                       (item.spesifikasi || '').toLowerCase().includes(search);
                 const matchesCat = !cat || item.kategori === cat;
                 const matchesKon = !kon || item.kondisi === kon;
-                return matchesSearch && matchesCat && matchesKon;
+                const matchesRua = !rua || item.ruangan_id === rua;
+                return matchesSearch && matchesCat && matchesKon && matchesRua;
             });
 
             filtered.sort((a, b) => {
@@ -742,6 +794,7 @@
 
             tbody.innerHTML = data.map(item => {
                 const isDipinjam = activePinjamIds.includes(item.id);
+                const namaRuangan = item.ruangan?.nama_ruangan || 'Belum Diatur';
 
                 return `
                     <tr class="hover:bg-slate-100 dark:hover:bg-slate-800/50 transition">
@@ -753,6 +806,11 @@
                         <td class="py-3.5 px-4">
                             <span class="inline-block px-2.5 py-1 rounded-md text-xs font-medium bg-slate-200 dark:bg-slate-700/60 text-slate-700 dark:text-slate-300 border border-slate-300 dark:border-slate-600/40">
                                 ${item.kategori}
+                            </span>
+                        </td>
+                        <td class="py-3.5 px-4">
+                            <span class="inline-block px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-50 dark:bg-indigo-950/40 text-indigo-700 dark:text-indigo-300 border border-indigo-200 dark:border-indigo-800/50">
+                                ${namaRuangan}
                             </span>
                         </td>
                         <td class="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400">${item.spesifikasi || '-'}</td>
@@ -828,6 +886,7 @@
                         <td class="py-3.5 px-4">
                             <div class="font-medium text-indigo-600 dark:text-indigo-400 font-mono text-xs">${p.inventaris?.id_aset || '-'}</div>
                             <div class="text-xs text-slate-700 dark:text-slate-200">${p.inventaris?.nama_alat || 'Barang Dihapus'}</div>
+                            <div class="text-[10px] text-slate-400">Asal: ${p.inventaris?.ruangan?.nama_ruangan || '-'}</div>
                         </td>
                         <td class="py-3.5 px-4 text-xs text-slate-500 dark:text-slate-400">${new Date(p.tanggal_pinjam).toLocaleDateString('id-ID')}</td>
                         <td class="py-3.5 px-4 text-xs font-semibold ${isTerlambat ? 'text-rose-600 dark:text-rose-400' : 'text-slate-600 dark:text-slate-300'}">${new Date(p.estimasi_kembali).toLocaleDateString('id-ID')}</td>
@@ -893,7 +952,7 @@
                     <div onclick="selectBarangForPinjam('${item.id}', '${item.id_aset}', '${item.nama_alat}')" class="p-2.5 text-xs hover:bg-indigo-600/20 cursor-pointer transition">
                         <span class="font-mono font-bold text-indigo-600 dark:text-indigo-400">[${item.id_aset}]</span> 
                         <span class="font-medium text-slate-800 dark:text-slate-100">${item.nama_alat}</span>
-                        <span class="text-slate-400 text-[10px]">(${item.merek || '-'})</span>
+                        <span class="text-slate-400 text-[10px]">(${item.ruangan?.nama_ruangan || 'No Room'})</span>
                     </div>
                 `).join('');
             }
@@ -994,6 +1053,7 @@
                 nama_alat: document.getElementById('addNamaAlat').value.trim(),
                 merek: document.getElementById('addMerek').value.trim(),
                 kategori: document.getElementById('addKategori').value.trim(),
+                ruangan_id: document.getElementById('addRuangan').value || null,
                 jumlah: 1,
                 kondisi: document.getElementById('addKondisi').value,
                 spesifikasi: document.getElementById('addSpesifikasi').value.trim() || null
@@ -1020,6 +1080,7 @@
             document.getElementById('editNamaAlat').value = item.nama_alat || '';
             document.getElementById('editMerek').value = item.merek || '';
             document.getElementById('editKategori').value = item.kategori || '';
+            document.getElementById('editRuangan').value = item.ruangan_id || '';
             document.getElementById('editKondisi').value = item.kondisi || 'Baik';
             document.getElementById('editSpesifikasi').value = item.spesifikasi || '';
 
@@ -1039,6 +1100,7 @@
                 nama_alat: document.getElementById('editNamaAlat').value.trim(),
                 merek: document.getElementById('editMerek').value.trim(),
                 kategori: document.getElementById('editKategori').value.trim(),
+                ruangan_id: document.getElementById('editRuangan').value || null,
                 jumlah: 1,
                 kondisi: document.getElementById('editKondisi').value,
                 spesifikasi: document.getElementById('editSpesifikasi').value.trim() || null

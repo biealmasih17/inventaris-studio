@@ -336,8 +336,8 @@
                 </div>
 
                 <div class="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-700">
-                    <button type="button" id="btnAdminManageTemplate" onclick="openModalManageTemplate()" class="hidden text-xs text-purple-600 dark:text-purple-400 hover:underline">
-                        + Buat/Kelora Template (Admin)
+                    <button type="button" id="btnAdminManageTemplate" onclick="openModalManageTemplate()" class="hidden text-xs text-purple-600 dark:text-purple-400 hover:underline font-medium">
+                        + Buat/Kelola Template (Admin)
                     </button>
                     <div class="flex space-x-2 ml-auto">
                         <button type="button" onclick="toggleModal('modalPinjamTemplate', false)" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Batal</button>
@@ -348,7 +348,7 @@
         </div>
     </div>
 
-    <!-- MODAL KELOLA TEMPLATE (KHUSUS ADMIN) -->
+    <!-- MODAL KELOLA TEMPLATE (KHUSUS ADMIN) - DENGAN PENCARIAN & SELECT ALL -->
     <div id="modalKelolaTemplate" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
@@ -370,8 +370,22 @@
                 </div>
 
                 <div>
-                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Pilih Item Alat yang Masuk dalam Paket</label>
-                    <div id="templateItemChecklist" class="mt-1 border border-slate-200 dark:border-slate-700 rounded-lg max-h-48 overflow-y-auto p-2.5 space-y-2 bg-slate-50 dark:bg-slate-900"></div>
+                    <div class="flex items-center justify-between mb-1">
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Pilih Item Alat yang Masuk dalam Paket</label>
+                        <div class="space-x-2">
+                            <button type="button" onclick="selectAllTemplateItems(true)" class="text-[11px] font-semibold text-purple-600 dark:text-purple-400 hover:underline">Pilih Semua</button>
+                            <span class="text-slate-400 text-[11px]">|</span>
+                            <button type="button" onclick="selectAllTemplateItems(false)" class="text-[11px] font-semibold text-slate-400 hover:underline">Batal Semua</button>
+                        </div>
+                    </div>
+
+                    <!-- SEARCH BOX DENGAN IKON LENS -->
+                    <div class="relative mb-2">
+                        <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400"></i>
+                        <input type="text" id="searchTemplateItemInput" oninput="filterTemplateItemsList()" placeholder="Cari nama alat / ID Aset di sini..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-8 pr-3 py-1.5 text-xs text-slate-800 dark:text-slate-100 focus:outline-none focus:border-purple-500">
+                    </div>
+
+                    <div id="templateItemChecklist" class="border border-slate-200 dark:border-slate-700 rounded-lg max-h-48 overflow-y-auto p-2.5 space-y-2 bg-slate-50 dark:bg-slate-900"></div>
                 </div>
 
                 <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-700">
@@ -1134,7 +1148,7 @@
             container.classList.remove('hidden');
 
             if (hasUnavailable) {
-                warningEl.innerText = "⚠️ Beberapar barang dalam paket ini sedang dipinjam! Pengajuan diproses untuk item yang tersedia.";
+                warningEl.innerText = "⚠️ Beberapa barang dalam paket ini sedang dipinjam! Pengajuan diproses untuk item yang tersedia.";
                 warningEl.classList.remove('hidden');
             } else {
                 warningEl.classList.add('hidden');
@@ -1155,7 +1169,6 @@
                 .filter(p => p.status === 'Dipinjam' || p.status === 'Terlambat')
                 .map(p => p.inventaris_id);
 
-            // Filter item yang benar-benar TERSEDIA saja
             const availableItems = t.template_item
                 .map(ti => ti.inventaris)
                 .filter(item => !activePinjamIds.includes(item.id));
@@ -1191,19 +1204,43 @@
             }
         }
 
+        // KELOLA TEMPLATE DENGAN SEARCH & SELECT ALL
         function openModalManageTemplate() {
             toggleModal('modalPinjamTemplate', false);
-            const container = document.getElementById('templateItemChecklist');
+            document.getElementById('searchTemplateItemInput').value = '';
+            renderTemplateItemChecklist(inventoryData);
+            toggleModal('modalKelolaTemplate', true);
+        }
 
-            container.innerHTML = inventoryData.map(item => `
-                <label class="flex items-center space-x-2 text-xs text-slate-700 dark:text-slate-300 p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded cursor-pointer">
+        function renderTemplateItemChecklist(items) {
+            const container = document.getElementById('templateItemChecklist');
+            if (items.length === 0) {
+                container.innerHTML = `<p class="text-xs text-slate-400 text-center py-2">Barang tidak ditemukan.</p>`;
+                return;
+            }
+
+            container.innerHTML = items.map(item => `
+                <label class="template-item-label flex items-center space-x-2 text-xs text-slate-700 dark:text-slate-300 p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded cursor-pointer">
                     <input type="checkbox" value="${item.id}" class="template-item-checkbox text-purple-600 rounded">
                     <span class="font-mono font-bold text-indigo-500">[${item.id_aset}]</span>
-                    <span>${item.nama_alat} (${item.merek || '-'})</span>
+                    <span>${item.nama_alat} ${item.merek ? `(${item.merek})` : ''}</span>
                 </label>
             `).join('');
+        }
 
-            toggleModal('modalKelolaTemplate', true);
+        function filterTemplateItemsList() {
+            const query = document.getElementById('searchTemplateItemInput').value.toLowerCase();
+            const filtered = inventoryData.filter(i => 
+                (i.nama_alat || '').toLowerCase().includes(query) ||
+                (i.id_aset || '').toLowerCase().includes(query) ||
+                (i.merek || '').toLowerCase().includes(query)
+            );
+            renderTemplateItemChecklist(filtered);
+        }
+
+        function selectAllTemplateItems(select) {
+            const checkboxes = document.querySelectorAll('.template-item-checkbox');
+            checkboxes.forEach(cb => cb.checked = select);
         }
 
         async function handleCreateTemplate(e) {
@@ -1224,7 +1261,6 @@
                 return;
             }
 
-            // 1. Insert Template Induk
             const { data: newTemp, error: errTemp } = await supabaseClient
                 .from('template_peminjaman')
                 .insert([{ nama_template: nama, keterangan: ket }])
@@ -1236,7 +1272,6 @@
                 return;
             }
 
-            // 2. Insert Items
             const itemsPayload = selectedItemIds.map(invId => ({
                 template_id: newTemp.id,
                 inventaris_id: invId

@@ -244,15 +244,21 @@
                     <input type="text" id="searchPinjamInput" oninput="renderPeminjamanTable()" placeholder="Cari Nama Peminjam, Barang..." class="w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg pl-9 pr-4 py-2 text-sm text-slate-800 dark:text-slate-100 focus:outline-none focus:border-indigo-500">
                 </div>
 
-                <div class="flex items-center space-x-3 w-full sm:w-auto justify-end">
+                <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
                     <button onclick="openExportModal('peminjaman')" class="bg-emerald-600 hover:bg-emerald-500 text-white px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-1.5 shadow-md shadow-emerald-600/20">
                         <i data-lucide="download" class="w-4 h-4"></i>
                         <span>Ekspor Laporan</span>
                     </button>
 
+                    <!-- TOMBOL PINJAM TEMPLATE / PAKET -->
+                    <button onclick="openModalPinjamTemplate()" class="bg-purple-600 hover:bg-purple-500 text-white px-3.5 py-2 rounded-lg text-sm font-medium transition flex items-center space-x-1.5 shadow-md shadow-purple-600/20">
+                        <i data-lucide="layers" class="w-4 h-4"></i>
+                        <span>Pinjam Paket (Template)</span>
+                    </button>
+
                     <button onclick="openModalPinjam()" class="w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition flex items-center justify-center space-x-2 shadow-lg shadow-indigo-600/20">
                         <i data-lucide="plus-circle" class="w-4 h-4"></i>
-                        <span>Pinjam Barang Baru</span>
+                        <span>Pinjam Satuan</span>
                     </button>
                 </div>
             </div>
@@ -281,6 +287,100 @@
         </div>
 
     </main>
+
+    <!-- MODAL PEMINJAMAN PAKET / TEMPLATE -->
+    <div id="modalPinjamTemplate" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="layers" class="w-5 h-5 text-purple-500"></i>
+                    <span>Peminjaman Paket Production</span>
+                </h3>
+                <button onclick="toggleModal('modalPinjamTemplate', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+            
+            <form onsubmit="handleBatchPeminjaman(event)" class="space-y-4">
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Pilih Template Paket</label>
+                    <select id="selectTemplatePackage" onchange="onTemplateSelected()" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
+                        <option value="">-- Pilih Paket Produksi --</option>
+                    </select>
+                </div>
+
+                <!-- ITEM PREVIEW IN TEMPLATE -->
+                <div id="templateItemsContainer" class="hidden space-y-2 border border-slate-200 dark:border-slate-700 rounded-lg p-3 bg-slate-50 dark:bg-slate-900/50">
+                    <span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Daftar Barang dalam Paket ini:</span>
+                    <ul id="templateItemsList" class="text-xs divide-y divide-slate-200 dark:divide-slate-800 max-h-36 overflow-y-auto"></ul>
+                    <div id="templateWarningTxt" class="hidden text-[11px] font-semibold text-rose-500 pt-1"></div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Nama Peminjam</label>
+                        <input type="text" id="batchPinjamNama" required placeholder="Budi Santoso" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
+                    </div>
+                    <div>
+                        <label class="text-xs font-medium text-slate-600 dark:text-slate-300">No. WhatsApp / Kontak</label>
+                        <input type="text" id="batchPinjamKontak" required placeholder="08123456789" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Kegiatan / Keperluan</label>
+                    <input type="text" id="batchPinjamKegiatan" placeholder="Live Streaming Acara Kampus" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
+                </div>
+
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Estimasi Tgl Pengembalian</label>
+                    <input type="date" id="batchPinjamEstimasi" required class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
+                </div>
+
+                <div class="flex justify-between items-center pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" id="btnAdminManageTemplate" onclick="openModalManageTemplate()" class="hidden text-xs text-purple-600 dark:text-purple-400 hover:underline">
+                        + Buat/Kelora Template (Admin)
+                    </button>
+                    <div class="flex space-x-2 ml-auto">
+                        <button type="button" onclick="toggleModal('modalPinjamTemplate', false)" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Batal</button>
+                        <button type="submit" id="btnSubmitBatchPinjam" class="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium shadow-lg shadow-purple-600/30">Proses Pinjam Paket</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL KELOLA TEMPLATE (KHUSUS ADMIN) -->
+    <div id="modalKelolaTemplate" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
+                <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center space-x-2">
+                    <i data-lucide="settings" class="w-5 h-5 text-purple-500"></i>
+                    <span>Buat Paket / Template Baru</span>
+                </h3>
+                <button onclick="toggleModal('modalKelolaTemplate', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
+            </div>
+
+            <form onsubmit="handleCreateTemplate(event)" class="space-y-3">
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Nama Paket Template</label>
+                    <input type="text" id="newTemplateNama" required placeholder="Paket Live Streaming Standard" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
+                </div>
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Keterangan Singkat</label>
+                    <input type="text" id="newTemplateKet" placeholder="3 Kamera + 2 Clip On + Switcher" class="mt-1 w-full bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg p-2.5 text-sm text-slate-800 dark:text-slate-100">
+                </div>
+
+                <div>
+                    <label class="text-xs font-medium text-slate-600 dark:text-slate-300">Pilih Item Alat yang Masuk dalam Paket</label>
+                    <div id="templateItemChecklist" class="mt-1 border border-slate-200 dark:border-slate-700 rounded-lg max-h-48 overflow-y-auto p-2.5 space-y-2 bg-slate-50 dark:bg-slate-900"></div>
+                </div>
+
+                <div class="flex justify-end space-x-2 pt-3 border-t border-slate-200 dark:border-slate-700">
+                    <button type="button" onclick="toggleModal('modalKelolaTemplate', false)" class="px-4 py-2 text-sm text-slate-500 hover:text-slate-800 dark:text-slate-400 dark:hover:text-white">Batal</button>
+                    <button type="submit" class="px-4 py-2 text-sm bg-purple-600 hover:bg-purple-500 text-white rounded-lg font-medium">Simpan Template Baru</button>
+                </div>
+            </form>
+        </div>
+    </div>
 
     <!-- MODAL EKSPOR LAPORAN -->
     <div id="modalExport" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
@@ -447,13 +547,13 @@
         </div>
     </div>
 
-    <!-- MODAL CATAT PEMINJAMAN -->
+    <!-- MODAL CATAT PEMINJAMAN SATUAN -->
     <div id="modalPinjam" class="fixed inset-0 bg-black/70 z-50 hidden flex items-center justify-center p-4">
         <div class="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl max-w-lg w-full p-6 space-y-4 shadow-2xl">
             <div class="flex items-center justify-between border-b border-slate-200 dark:border-slate-700 pb-3">
                 <h3 class="font-bold text-slate-900 dark:text-white text-lg flex items-center space-x-2">
                     <i data-lucide="arrow-left-right" class="w-5 h-5 text-indigo-500"></i>
-                    <span>Catat Peminjaman Barang</span>
+                    <span>Catat Peminjaman Satuan</span>
                 </h3>
                 <button onclick="toggleModal('modalPinjam', false)" class="text-slate-400 hover:text-slate-600 dark:hover:text-white"><i data-lucide="x" class="w-5 h-5"></i></button>
             </div>
@@ -502,6 +602,7 @@
         let inventoryData = [];
         let peminjamanData = [];
         let ruanganData = [];
+        let templateData = [];
         let currentUserRole = 'guest';
         
         let currentSortColumn = 'id_aset';
@@ -556,6 +657,7 @@
                 fetchRuangan();
                 fetchInventory();
                 fetchPeminjaman();
+                fetchTemplates();
                 subscribeRealtime();
             } catch (e) {
                 console.error(e);
@@ -589,6 +691,27 @@
                 filterSelect.innerHTML += `<option value="${r.id}">${r.nama_ruangan}</option>`;
                 addSelect.innerHTML += `<option value="${r.id}">${r.nama_ruangan}</option>`;
                 editSelect.innerHTML += `<option value="${r.id}">${r.nama_ruangan}</option>`;
+            });
+        }
+
+        async function fetchTemplates() {
+            if (!supabaseClient) return;
+            const { data, error } = await supabaseClient
+                .from('template_peminjaman')
+                .select('*, template_item(*, inventaris(*))')
+                .order('nama_template', { ascending: true });
+
+            if (!error && data) {
+                templateData = data;
+                populateTemplateDropdown();
+            }
+        }
+
+        function populateTemplateDropdown() {
+            const select = document.getElementById('selectTemplatePackage');
+            select.innerHTML = '<option value="">-- Pilih Paket Produksi --</option>';
+            templateData.forEach(t => {
+                select.innerHTML += `<option value="${t.id}">${t.nama_template} ${t.keterangan ? `(${t.keterangan})` : ''}</option>`;
             });
         }
 
@@ -633,14 +756,17 @@
 
                 if (currentUserRole === 'admin') {
                     document.getElementById('btnTambahAlat')?.classList.remove('hidden');
+                    document.getElementById('btnAdminManageTemplate')?.classList.remove('hidden');
                 } else {
                     document.getElementById('btnTambahAlat')?.classList.add('hidden');
+                    document.getElementById('btnAdminManageTemplate')?.classList.add('hidden');
                 }
             } else {
                 currentUserRole = 'guest';
                 document.getElementById('userProfileArea').classList.add('hidden');
                 document.getElementById('btnLoginModal').classList.remove('hidden');
                 document.getElementById('btnTambahAlat')?.classList.add('hidden');
+                document.getElementById('btnAdminManageTemplate')?.classList.add('hidden');
             }
 
             const colAksis = document.querySelectorAll('.col-aksi');
@@ -669,6 +795,7 @@
                 checkAuthState();
                 fetchInventory();
                 fetchPeminjaman();
+                fetchTemplates();
             }
         }
 
@@ -725,6 +852,7 @@
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'inventaris' }, () => fetchInventory())
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'peminjaman' }, () => fetchPeminjaman())
                 .on('postgres_changes', { event: '*', schema: 'public', table: 'ruangan' }, () => fetchRuangan())
+                .on('postgres_changes', { event: '*', schema: 'public', table: 'template_peminjaman' }, () => fetchTemplates())
                 .subscribe();
         }
 
@@ -949,6 +1077,184 @@
             lucide.createIcons();
         }
 
+        // LOGIKA PEMINJAMAN PAKET / TEMPLATE
+        function openModalPinjamTemplate() {
+            document.getElementById('templateItemsContainer').classList.add('hidden');
+            document.getElementById('selectTemplatePackage').value = '';
+            toggleModal('modalPinjamTemplate', true);
+        }
+
+        function onTemplateSelected() {
+            const templateId = document.getElementById('selectTemplatePackage').value;
+            const container = document.getElementById('templateItemsContainer');
+            const listEl = document.getElementById('templateItemsList');
+            const warningEl = document.getElementById('templateWarningTxt');
+            const submitBtn = document.getElementById('btnSubmitBatchPinjam');
+
+            if (!templateId) {
+                container.classList.add('hidden');
+                return;
+            }
+
+            const t = templateData.find(x => x.id === templateId);
+            if (!t || !t.template_item || t.template_item.length === 0) {
+                container.classList.remove('hidden');
+                listEl.innerHTML = `<li class="py-2 text-slate-400">Template ini belum memiliki daftar barang.</li>`;
+                warningEl.classList.add('hidden');
+                submitBtn.disabled = true;
+                return;
+            }
+
+            const activePinjamIds = peminjamanData
+                .filter(p => p.status === 'Dipinjam' || p.status === 'Terlambat')
+                .map(p => p.inventaris_id);
+
+            let hasUnavailable = false;
+
+            listEl.innerHTML = t.template_item.map(ti => {
+                const item = ti.inventaris;
+                const isDipinjam = activePinjamIds.includes(item.id);
+                if (isDipinjam) hasUnavailable = true;
+
+                return `
+                    <li class="py-1.5 flex items-center justify-between">
+                        <div>
+                            <span class="font-mono font-bold text-indigo-500">[${item.id_aset}]</span>
+                            <span class="font-medium text-slate-700 dark:text-slate-200">${item.nama_alat}</span>
+                        </div>
+                        ${isDipinjam ? `
+                            <span class="text-[10px] font-bold text-rose-500 bg-rose-500/10 border border-rose-500/30 px-2 py-0.5 rounded">Sedang Dipinjam</span>
+                        ` : `
+                            <span class="text-[10px] font-bold text-emerald-500 bg-emerald-500/10 border border-emerald-500/30 px-2 py-0.5 rounded">Tersedia</span>
+                        `}
+                    </li>
+                `;
+            }).join('');
+
+            container.classList.remove('hidden');
+
+            if (hasUnavailable) {
+                warningEl.innerText = "⚠️ Beberapar barang dalam paket ini sedang dipinjam! Pengajuan diproses untuk item yang tersedia.";
+                warningEl.classList.remove('hidden');
+            } else {
+                warningEl.classList.add('hidden');
+            }
+
+            submitBtn.disabled = false;
+        }
+
+        async function handleBatchPeminjaman(e) {
+            e.preventDefault();
+            if (!supabaseClient) return;
+
+            const templateId = document.getElementById('selectTemplatePackage').value;
+            const t = templateData.find(x => x.id === templateId);
+            if (!t) return;
+
+            const activePinjamIds = peminjamanData
+                .filter(p => p.status === 'Dipinjam' || p.status === 'Terlambat')
+                .map(p => p.inventaris_id);
+
+            // Filter item yang benar-benar TERSEDIA saja
+            const availableItems = t.template_item
+                .map(ti => ti.inventaris)
+                .filter(item => !activePinjamIds.includes(item.id));
+
+            if (availableItems.length === 0) {
+                showToast('Seluruh barang dalam paket ini sedang tidak tersedia!', 'error');
+                return;
+            }
+
+            const nama = document.getElementById('batchPinjamNama').value.trim();
+            const kontak = document.getElementById('batchPinjamKontak').value.trim();
+            const kegiatan = document.getElementById('batchPinjamKegiatan').value.trim() || null;
+            const estimasi = document.getElementById('batchPinjamEstimasi').value;
+
+            const batchPayload = availableItems.map(item => ({
+                inventaris_id: item.id,
+                nama_peminjam: nama,
+                kontak_peminjam: kontak,
+                kegiatan: kegiatan,
+                estimasi_kembali: estimasi,
+                status: 'Dipinjam'
+            }));
+
+            const { error } = await supabaseClient.from('peminjaman').insert(batchPayload);
+
+            if (error) {
+                showToast('Gagal memproses peminjaman paket: ' + error.message, 'error');
+            } else {
+                showToast(`Berhasil meminjam ${availableItems.length} barang sekaligus!`);
+                toggleModal('modalPinjamTemplate', false);
+                e.target.reset();
+                fetchPeminjaman();
+            }
+        }
+
+        function openModalManageTemplate() {
+            toggleModal('modalPinjamTemplate', false);
+            const container = document.getElementById('templateItemChecklist');
+
+            container.innerHTML = inventoryData.map(item => `
+                <label class="flex items-center space-x-2 text-xs text-slate-700 dark:text-slate-300 p-1 hover:bg-slate-200 dark:hover:bg-slate-800 rounded cursor-pointer">
+                    <input type="checkbox" value="${item.id}" class="template-item-checkbox text-purple-600 rounded">
+                    <span class="font-mono font-bold text-indigo-500">[${item.id_aset}]</span>
+                    <span>${item.nama_alat} (${item.merek || '-'})</span>
+                </label>
+            `).join('');
+
+            toggleModal('modalKelolaTemplate', true);
+        }
+
+        async function handleCreateTemplate(e) {
+            e.preventDefault();
+            if (currentUserRole !== 'admin') {
+                showToast('Hanya Admin yang bisa membuat template!', 'error');
+                return;
+            }
+
+            const nama = document.getElementById('newTemplateNama').value.trim();
+            const ket = document.getElementById('newTemplateKet').value.trim() || null;
+
+            const checkboxes = document.querySelectorAll('.template-item-checkbox:checked');
+            const selectedItemIds = Array.from(checkboxes).map(cb => cb.value);
+
+            if (selectedItemIds.length === 0) {
+                showToast('Pilih setidaknya 1 item alat untuk paket!', 'error');
+                return;
+            }
+
+            // 1. Insert Template Induk
+            const { data: newTemp, error: errTemp } = await supabaseClient
+                .from('template_peminjaman')
+                .insert([{ nama_template: nama, keterangan: ket }])
+                .select()
+                .single();
+
+            if (errTemp) {
+                showToast('Gagal membuat template: ' + errTemp.message, 'error');
+                return;
+            }
+
+            // 2. Insert Items
+            const itemsPayload = selectedItemIds.map(invId => ({
+                template_id: newTemp.id,
+                inventaris_id: invId
+            }));
+
+            const { error: errItems } = await supabaseClient.from('template_item').insert(itemsPayload);
+
+            if (errItems) {
+                showToast('Gagal mendaftarkan item ke template: ' + errItems.message, 'error');
+            } else {
+                showToast('Template paket baru berhasil disimpan!');
+                toggleModal('modalKelolaTemplate', false);
+                e.target.reset();
+                fetchTemplates();
+            }
+        }
+
+        // EXPORT LAPORAN
         function openExportModal(type) {
             currentExportType = type;
             const titleEl = document.getElementById('exportModalTitle');
